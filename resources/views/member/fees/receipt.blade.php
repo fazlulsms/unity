@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 @section('title', 'Receipt #{{ $receipt->receipt_number }}')
 @section('page-title', 'Receipt')
 
@@ -16,7 +16,7 @@
             <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
                 <i class="fas fa-receipt text-white text-xl"></i>
             </div>
-            <h1 class="text-xl font-bold">Unity Club</h1>
+            <h1 class="text-xl font-bold">Unity Circle</h1>
             <p class="text-blue-200 text-sm mt-1">Official Payment Receipt</p>
         </div>
 

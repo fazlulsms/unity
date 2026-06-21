@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -62,7 +62,7 @@
 
         <p>You can also download this receipt from the member portal under <em>Payment History</em>.</p>
         <p>Thank you for your timely payment!</p>
-        <p>Regards,<br><strong>Unity Club Treasurer</strong></p>
+        <p>Regards,<br><strong>Unity Circle Treasurer</strong></p>
     </div>
     <div class="footer">This is an automated email. Please do not reply directly to this message.</div>
 </div>

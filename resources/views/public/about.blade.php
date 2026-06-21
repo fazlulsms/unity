@@ -1,14 +1,14 @@
-@extends('layouts.public')
-@section('title', 'About — Unity Club')
+﻿@extends('layouts.public')
+@section('title', 'About — Unity Circle')
 
 @section('content')
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <h1 class="text-3xl font-bold text-gray-900 mb-4">About Unity Club</h1>
+    <h1 class="text-3xl font-bold text-gray-900 mb-4">About Unity Circle</h1>
     <div class="w-16 h-1 bg-blue-600 rounded mb-8"></div>
 
     <div class="prose prose-lg max-w-none text-gray-600 space-y-6">
         <p>
-            Unity Club is a small, private friendship club founded on the principles of trust, mutual support, and financial transparency. Our members come together with the shared goal of building collective savings and supporting each other through a structured, accountable system.
+            Unity Circle is a small, private friendship club founded on the principles of trust, mutual support, and financial transparency. Our members come together with the shared goal of building collective savings and supporting each other through a structured, accountable system.
         </p>
 
         <div class="grid sm:grid-cols-2 gap-6 not-prose my-8">

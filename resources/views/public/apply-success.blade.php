@@ -1,5 +1,5 @@
-@extends('layouts.public')
-@section('title', 'Application Submitted — Unity Club')
+﻿@extends('layouts.public')
+@section('title', 'Application Submitted — Unity Circle')
 
 @section('content')
 <div class="max-w-lg mx-auto px-4 py-20 text-center">
@@ -8,7 +8,7 @@
     </div>
     <h1 class="text-2xl font-bold text-gray-900 mb-3">Application Submitted!</h1>
     <p class="text-gray-500 mb-6">
-        Thank you for applying to Unity Club. Our admin team will review your application
+        Thank you for applying to Unity Circle. Our admin team will review your application
         and contact you via phone or email within a few business days.
     </p>
     <div class="bg-blue-50 rounded-xl p-5 text-sm text-blue-800 border border-blue-100 mb-8">

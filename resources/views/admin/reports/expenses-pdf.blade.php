@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -16,7 +16,7 @@
 </style>
 </head>
 <body>
-    <h1>Unity Club — Expense Report {{ $year }}</h1>
+    <h1>Unity Circle — Expense Report {{ $year }}</h1>
     <p class="subtitle">Generated: {{ now()->format('d M Y, g:i A') }} &nbsp;|&nbsp; Records: {{ $expenses->count() }}</p>
     <table>
         <thead>
@@ -49,6 +49,6 @@
             </tr>
         </tfoot>
     </table>
-    <div class="footer">Unity Club &nbsp;|&nbsp; Confidential financial information</div>
+    <div class="footer">Unity Circle &nbsp;|&nbsp; Confidential financial information</div>
 </body>
 </html>

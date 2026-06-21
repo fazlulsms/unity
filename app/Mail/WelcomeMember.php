@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Mail;
 
@@ -22,7 +22,7 @@ class WelcomeMember extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Welcome to Unity Club – Your Membership is Approved!');
+        return new Envelope(subject: 'Welcome to Unity Circle – Your Membership is Approved!');
     }
 
     public function content(): Content

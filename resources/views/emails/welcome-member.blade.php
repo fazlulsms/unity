@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -18,11 +18,11 @@
 <body>
 <div class="card">
     <div class="header">
-        <h1>Welcome to Unity Club!</h1>
+        <h1>Welcome to Unity Circle!</h1>
     </div>
     <div class="body">
         <p>Dear <strong>{{ $member->user->name }}</strong>,</p>
-        <p>We are delighted to welcome you as an official member of <strong>Unity Club</strong>. Your membership application has been approved and your account is now active.</p>
+        <p>We are delighted to welcome you as an official member of <strong>Unity Circle</strong>. Your membership application has been approved and your account is now active.</p>
 
         <div class="info-box">
             <p><strong>Member Number:</strong> {{ $member->member_number }}</p>
@@ -35,7 +35,7 @@
         <p>Please log in to the member portal and change your password immediately.</p>
         <p>You can submit your monthly fee payments through the portal, and our team will approve them and send you a receipt.</p>
         <p>If you have any questions, feel free to contact us.</p>
-        <p>Warm regards,<br><strong>Unity Club Administration</strong></p>
+        <p>Warm regards,<br><strong>Unity Circle Administration</strong></p>
     </div>
     <div class="footer">This is an automated email. Please do not reply directly to this message.</div>
 </div>

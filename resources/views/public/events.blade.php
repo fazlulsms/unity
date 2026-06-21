@@ -1,5 +1,5 @@
-@extends('layouts.public')
-@section('title', 'Events & Gallery — Unity Club')
+﻿@extends('layouts.public')
+@section('title', 'Events & Gallery — Unity Circle')
 @section('content')
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <h1 class="text-2xl font-bold text-gray-900 mb-2">Events & Gallery</h1>

@@ -1,5 +1,5 @@
-@extends('layouts.public')
-@section('title', 'Unity Club — Friendship, Family & Community')
+﻿@extends('layouts.public')
+@section('title', 'Unity Circle — Friendship, Family & Community')
 
 @section('content')
 
@@ -29,7 +29,7 @@
         </h1>
 
         <p class="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Unity Club is a close-knit community where professionals come together not for profit,
+            Unity Circle is a close-knit community where professionals come together not for profit,
             but for the joy of genuine connection, mutual support, and lifelong friendship.
         </p>
 
@@ -78,7 +78,7 @@
                     More Than a Club —<br>A Family of Friends
                 </h2>
                 <p class="text-gray-600 leading-relaxed mb-5 text-[15px]">
-                    Unity Club is a private, invitation-only community formed by a group of trusted professionals
+                    Unity Circle is a private, invitation-only community formed by a group of trusted professionals
                     who share a deep bond of friendship and mutual respect. We are not an investment platform,
                     savings group, or financial institution — we are a family.
                 </p>
@@ -90,7 +90,7 @@
                 </p>
                 <p class="text-gray-600 leading-relaxed text-[15px]">
                     Every gathering, every celebration, every moment of support we offer each other
-                    strengthens the bonds that make Unity Club what it truly is: a home away from home.
+                    strengthens the bonds that make Unity Circle what it truly is: a home away from home.
                 </p>
             </div>
             <div class="grid grid-cols-2 gap-4">
@@ -142,7 +142,7 @@
         <p class="text-blue-100 text-lg leading-relaxed max-w-3xl mx-auto">
             We envision a lifelong community where friendship never fades, families are celebrated,
             and every member — regardless of life's changes — always has a circle of trusted companions
-            to lean on. Unity Club aspires to be the gold standard of what a private community can be:
+            to lean on. Unity Circle aspires to be the gold standard of what a private community can be:
             warm, purposeful, enduring, and deeply human.
         </p>
     </div>
@@ -202,7 +202,7 @@
                 </div>
                 <div>
                     <h3 class="font-bold text-gray-900 text-sm mb-1">Uphold Values & Integrity</h3>
-                    <p class="text-gray-500 text-xs leading-relaxed">Maintain a community culture grounded in trust, respect, and personal responsibility — ensuring Unity Club remains a safe, positive space.</p>
+                    <p class="text-gray-500 text-xs leading-relaxed">Maintain a community culture grounded in trust, respect, and personal responsibility — ensuring Unity Circle remains a safe, positive space.</p>
                 </div>
             </div>
             <div class="flex gap-4 p-5 rounded-2xl bg-gray-50 hover:bg-blue-50 transition-colors duration-200">
@@ -230,7 +230,7 @@
             </h2>
             <p class="text-gray-500 mt-3 max-w-xl mx-auto text-[15px]">
                 These six values are not aspirations — they are the living commitments that every
-                Unity Club member makes to one another.
+                Unity Circle member makes to one another.
             </p>
         </div>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -312,7 +312,7 @@
                     <i class="fas fa-hands-helping text-emerald-600 text-lg"></i>
                 </div>
                 <h3 class="font-bold text-gray-900 text-lg mb-2">Support in Every Season</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">Whether you're celebrating a milestone or facing a challenge, your Unity Club family stands with you — always present, always caring.</p>
+                <p class="text-gray-500 text-sm leading-relaxed">Whether you're celebrating a milestone or facing a challenge, your Unity Circle family stands with you — always present, always caring.</p>
             </div>
             <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
                 <div class="w-11 h-11 bg-violet-100 rounded-xl flex items-center justify-center mb-4">
@@ -333,7 +333,7 @@
                     <i class="fas fa-infinity text-teal-600 text-lg"></i>
                 </div>
                 <h3 class="font-bold text-gray-900 text-lg mb-2">Lifelong Belonging</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">Unity Club is designed to last. Membership grows and deepens over the years, creating bonds that span careers, families, and generations.</p>
+                <p class="text-gray-500 text-sm leading-relaxed">Unity Circle is designed to last. Membership grows and deepens over the years, creating bonds that span careers, families, and generations.</p>
             </div>
         </div>
     </div>
@@ -350,7 +350,7 @@
                 Community Activities
             </h2>
             <p class="text-gray-500 mt-3 max-w-xl mx-auto text-[15px]">
-                Life is richer when shared. Here are some of the ways Unity Club members come together to create memories.
+                Life is richer when shared. Here are some of the ways Unity Circle members come together to create memories.
             </p>
         </div>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -394,7 +394,7 @@
                     <i class="fas fa-gift text-white text-lg"></i>
                 </div>
                 <h3 class="font-bold text-gray-900 mb-2">Milestone Celebrations</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">Birthdays, anniversaries, promotions, new arrivals — no member celebrates alone. Unity Club makes sure every milestone is marked with love and community.</p>
+                <p class="text-gray-500 text-sm leading-relaxed">Birthdays, anniversaries, promotions, new arrivals — no member celebrates alone. Unity Circle makes sure every milestone is marked with love and community.</p>
             </div>
         </div>
     </div>
@@ -412,7 +412,7 @@
                     How Membership Works
                 </h2>
                 <p class="text-gray-600 text-[15px] leading-relaxed mb-6">
-                    Unity Club membership is not open to the public. We are a private, invitation-based
+                    Unity Circle membership is not open to the public. We are a private, invitation-based
                     community. Each new member joins because someone within the club personally vouches
                     for them — ensuring that every person who enters our circle is someone whose character,
                     integrity, and values align with who we are.
@@ -462,7 +462,7 @@
                 </div>
                 <h3 class="text-2xl font-extrabold mb-3">Interested in Joining?</h3>
                 <p class="text-slate-300 text-sm leading-relaxed mb-6">
-                    If someone in Unity Club has spoken to you about membership, we welcome your
+                    If someone in Unity Circle has spoken to you about membership, we welcome your
                     application. Share a bit about yourself and why you'd like to be part of our
                     community — we look forward to getting to know you.
                 </p>
@@ -492,7 +492,7 @@
                 Transparency & Community Governance
             </h2>
             <p class="text-gray-500 mt-3 max-w-2xl mx-auto text-[15px]">
-                Unity Club operates with openness, fairness, and clear accountability — so every member
+                Unity Circle operates with openness, fairness, and clear accountability — so every member
                 always knows how the community is run and feels confident in its leadership.
             </p>
         </div>
@@ -502,7 +502,7 @@
                     <i class="fas fa-sitemap text-blue-600 text-lg"></i>
                 </div>
                 <h3 class="font-bold text-gray-900 mb-2">Clear Leadership Structure</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">Unity Club is governed by a small elected leadership committee responsible for decisions, communication, and the overall health of the community.</p>
+                <p class="text-gray-500 text-sm leading-relaxed">Unity Circle is governed by a small elected leadership committee responsible for decisions, communication, and the overall health of the community.</p>
             </div>
             <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                 <div class="w-11 h-11 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
@@ -537,7 +537,7 @@
                     <i class="fas fa-lock text-rose-600 text-lg"></i>
                 </div>
                 <h3 class="font-bold text-gray-900 mb-2">Member Confidentiality</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">All member information and community discussions are kept strictly private. What happens in Unity Club stays within Unity Club — always.</p>
+                <p class="text-gray-500 text-sm leading-relaxed">All member information and community discussions are kept strictly private. What happens in Unity Circle stays within Unity Circle — always.</p>
             </div>
         </div>
     </div>
@@ -591,7 +591,7 @@
                 </div>
                 <div>
                     <h3 class="font-bold text-gray-900 text-sm mb-1">Zero Tolerance for Disrespect</h3>
-                    <p class="text-gray-500 text-xs leading-relaxed">Harassment, discrimination, bullying, or any form of disrespect has no place in Unity Club. Violations are taken seriously by the leadership committee.</p>
+                    <p class="text-gray-500 text-xs leading-relaxed">Harassment, discrimination, bullying, or any form of disrespect has no place in Unity Circle. Violations are taken seriously by the leadership committee.</p>
                 </div>
             </div>
             <div class="flex gap-4 p-5 rounded-2xl border border-gray-100 bg-gray-50 hover:border-blue-100 hover:bg-blue-50/30 transition-colors duration-200">
@@ -673,7 +673,7 @@
             </span>
         </h2>
         <p class="text-slate-300 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
-            If you've been invited or are curious about Unity Club, we'd love to hear from you.
+            If you've been invited or are curious about Unity Circle, we'd love to hear from you.
             Membership is not just a status — it is a commitment to friendship, family, and building
             something genuinely special together.
         </p>

@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Unity Club')</title>
+    <title>@yield('title', 'Unity Circle')</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -21,7 +21,7 @@
                 <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center shadow-md shadow-blue-200">
                     <span class="text-white font-extrabold text-sm">UC</span>
                 </div>
-                <span class="font-extrabold text-gray-900 text-lg tracking-tight">Unity Club</span>
+                <span class="font-extrabold text-gray-900 text-lg tracking-tight">Unity Circle</span>
             </a>
 
             {{-- Desktop nav --}}
@@ -121,7 +121,7 @@
                     <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center">
                         <span class="text-white font-extrabold text-sm">UC</span>
                     </div>
-                    <span class="text-white font-extrabold text-lg">Unity Club</span>
+                    <span class="text-white font-extrabold text-lg">Unity Circle</span>
                 </div>
                 <p class="text-sm leading-relaxed max-w-xs">
                     A private community of trusted professionals bound by friendship, family values, and a lifelong commitment to one another.
@@ -146,7 +146,7 @@
             </div>
         </div>
         <div class="border-t border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-            <p>&copy; {{ date('Y') }} Unity Club. All rights reserved.</p>
+            <p>&copy; {{ date('Y') }} Unity Circle. All rights reserved.</p>
             <p class="text-slate-600">Private Membership Club</p>
         </div>
     </div>

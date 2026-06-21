@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -15,7 +15,7 @@
 </style>
 </head>
 <body>
-    <h1>Unity Club — Member List</h1>
+    <h1>Unity Circle — Member List</h1>
     <p class="subtitle">Generated: {{ now()->format('d M Y, g:i A') }} &nbsp;|&nbsp; Total: {{ $members->count() }} members</p>
     <table>
         <thead>
@@ -45,6 +45,6 @@
             @endforeach
         </tbody>
     </table>
-    <div class="footer">Unity Club &nbsp;|&nbsp; Confidential member information</div>
+    <div class="footer">Unity Circle &nbsp;|&nbsp; Confidential member information</div>
 </body>
 </html>

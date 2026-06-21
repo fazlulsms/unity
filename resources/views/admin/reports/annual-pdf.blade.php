@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -24,7 +24,7 @@
 </style>
 </head>
 <body>
-    <h1>Unity Club — Annual Fund Summary {{ $year }}</h1>
+    <h1>Unity Circle — Annual Fund Summary {{ $year }}</h1>
     <p class="subtitle">Generated: {{ now()->format('d M Y, g:i A') }}</p>
 
     <div class="summary-grid">
@@ -78,6 +78,6 @@
             </tr>
         </tfoot>
     </table>
-    <div class="footer">Unity Club &nbsp;|&nbsp; Annual Financial Summary &nbsp;|&nbsp; Confidential</div>
+    <div class="footer">Unity Circle &nbsp;|&nbsp; Annual Financial Summary &nbsp;|&nbsp; Confidential</div>
 </body>
 </html>
