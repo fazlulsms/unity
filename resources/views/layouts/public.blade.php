@@ -26,12 +26,12 @@
 
             {{-- Desktop nav --}}
             <div class="hidden md:flex items-center gap-1">
-                <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}">Home</a>
-                <a href="{{ route('about') }}" class="nav-link {{ request()->routeIs('about') ? 'active' : '' }}">About</a>
-                <a href="{{ route('notices') }}" class="nav-link {{ request()->routeIs('notices') ? 'active' : '' }}">Notices</a>
-                <a href="{{ route('events') }}" class="nav-link {{ request()->routeIs('events') ? 'active' : '' }}">Events</a>
-                <a href="{{ route('transparency') }}" class="nav-link {{ request()->routeIs('transparency') ? 'active' : '' }}">Transparency</a>
-                <a href="{{ route('contact') }}" class="nav-link {{ request()->routeIs('contact') ? 'active' : '' }}">Contact</a>
+                <a href="{{ route('home') }}"         class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}">Home</a>
+                <a href="{{ route('about') }}"        class="nav-link {{ request()->routeIs('about') ? 'active' : '' }}">About</a>
+                <a href="{{ route('events') }}"       class="nav-link {{ request()->routeIs('events') ? 'active' : '' }}">Events</a>
+                <a href="{{ route('notices') }}"      class="nav-link {{ request()->routeIs('notices') ? 'active' : '' }}">Announcements</a>
+                <a href="{{ route('apply') }}"        class="nav-link {{ request()->routeIs('apply') ? 'active' : '' }}">Membership</a>
+                <a href="{{ route('contact') }}"      class="nav-link {{ request()->routeIs('contact') ? 'active' : '' }}">Contact</a>
             </div>
 
             {{-- Auth buttons --}}
@@ -70,9 +70,9 @@
              class="md:hidden border-t border-gray-100 py-3 space-y-1">
             <a href="{{ route('home') }}" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Home</a>
             <a href="{{ route('about') }}" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">About</a>
-            <a href="{{ route('notices') }}" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Notices</a>
             <a href="{{ route('events') }}" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Events</a>
-            <a href="{{ route('transparency') }}" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Transparency</a>
+            <a href="{{ route('notices') }}" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Announcements</a>
+            <a href="{{ route('apply') }}" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Membership</a>
             <a href="{{ route('contact') }}" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Contact</a>
             <div class="pt-2 border-t border-gray-100 mt-2 flex flex-col gap-2">
                 @auth
@@ -124,16 +124,16 @@
                     <span class="text-white font-extrabold text-lg">Unity Club</span>
                 </div>
                 <p class="text-sm leading-relaxed max-w-xs">
-                    A private friendship club built on trust, transparency, and collective financial growth for all members.
+                    A private community of trusted professionals bound by friendship, family values, and a lifelong commitment to one another.
                 </p>
             </div>
             <div>
                 <h3 class="text-white font-semibold text-sm mb-4">Quick Links</h3>
                 <ul class="space-y-2.5 text-sm">
                     <li><a href="{{ route('about') }}" class="hover:text-white transition-colors">About Us</a></li>
-                    <li><a href="{{ route('apply') }}" class="hover:text-white transition-colors">Join the Club</a></li>
-                    <li><a href="{{ route('transparency') }}" class="hover:text-white transition-colors">Transparency</a></li>
-                    <li><a href="{{ route('notices') }}" class="hover:text-white transition-colors">Notices</a></li>
+                    <li><a href="{{ route('events') }}" class="hover:text-white transition-colors">Events</a></li>
+                    <li><a href="{{ route('notices') }}" class="hover:text-white transition-colors">Announcements</a></li>
+                    <li><a href="{{ route('apply') }}" class="hover:text-white transition-colors">Membership</a></li>
                 </ul>
             </div>
             <div>

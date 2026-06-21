@@ -14,9 +14,9 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $stats = $this->getPublicStats();
-        $notices = Notice::published()->public()->latest('published_at')->limit(3)->get();
-        return view('public.home', compact('stats', 'notices'));
+        $memberCount = Member::where('status', 'active')->count();
+        $notices = Notice::published()->public()->latest('published_at')->limit(4)->get();
+        return view('public.home', compact('memberCount', 'notices'));
     }
 
     public function about()
