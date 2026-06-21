@@ -1,0 +1,81 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\MeetingMinute;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
+class MeetingMinuteController extends Controller
+{
+    public function index()
+    {
+        $minutes = MeetingMinute::with('creator')->latest('meeting_date')->paginate(20);
+        return view('admin.meeting-minutes.index', compact('minutes'));
+    }
+
+    public function create()
+    {
+        return view('admin.meeting-minutes.create');
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'title'        => 'required|string|max:255',
+            'meeting_date' => 'required|date',
+            'content'      => 'required|string',
+            'attachment'   => 'nullable|file|mimes:jpeg,png,jpg,pdf,doc,docx|max:10240',
+            'is_public'    => 'nullable|boolean',
+        ]);
+
+        if ($request->hasFile('attachment')) {
+            $data['attachment'] = $request->file('attachment')->store('minutes', 'public');
+        }
+
+        $data['is_public']  = $request->boolean('is_public');
+        $data['created_by'] = auth()->id();
+
+        MeetingMinute::create($data);
+
+        return redirect()->route('admin.meeting-minutes.index')->with('success', 'Meeting minutes saved.');
+    }
+
+    public function edit(MeetingMinute $meetingMinute)
+    {
+        return view('admin.meeting-minutes.edit', compact('meetingMinute'));
+    }
+
+    public function update(Request $request, MeetingMinute $meetingMinute)
+    {
+        $data = $request->validate([
+            'title'        => 'required|string|max:255',
+            'meeting_date' => 'required|date',
+            'content'      => 'required|string',
+            'attachment'   => 'nullable|file|mimes:jpeg,png,jpg,pdf,doc,docx|max:10240',
+            'is_public'    => 'nullable|boolean',
+        ]);
+
+        if ($request->hasFile('attachment')) {
+            if ($meetingMinute->attachment) {
+                Storage::disk('public')->delete($meetingMinute->attachment);
+            }
+            $data['attachment'] = $request->file('attachment')->store('minutes', 'public');
+        }
+
+        $data['is_public'] = $request->boolean('is_public');
+        $meetingMinute->update($data);
+
+        return redirect()->route('admin.meeting-minutes.index')->with('success', 'Meeting minutes updated.');
+    }
+
+    public function destroy(MeetingMinute $meetingMinute)
+    {
+        if ($meetingMinute->attachment) {
+            Storage::disk('public')->delete($meetingMinute->attachment);
+        }
+        $meetingMinute->delete();
+        return back()->with('success', 'Meeting minutes deleted.');
+    }
+}

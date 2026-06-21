@@ -1,0 +1,47 @@
+@extends('layouts.app')
+@section('title', 'Meeting Minutes')
+@section('page-title', 'Meeting Minutes')
+@section('sidebar') @include('partials.admin-nav') @endsection
+
+@section('content')
+<div class="space-y-4">
+    <div class="flex justify-end">
+        <a href="{{ route('admin.meeting-minutes.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">+ Add Minutes</a>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b border-gray-100">
+                <tr>
+                    <th class="text-left px-5 py-3 text-xs font-medium text-gray-500">Title</th>
+                    <th class="text-left px-5 py-3 text-xs font-medium text-gray-500">Meeting Date</th>
+                    <th class="text-left px-5 py-3 text-xs font-medium text-gray-500">Public</th>
+                    <th class="text-left px-5 py-3 text-xs font-medium text-gray-500">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+                @forelse($minutes as $m)
+                <tr class="hover:bg-gray-50">
+                    <td class="px-5 py-3 font-medium text-gray-900">{{ $m->title }}</td>
+                    <td class="px-5 py-3 text-gray-500">{{ $m->meeting_date->format('d M Y') }}</td>
+                    <td class="px-5 py-3">
+                        @if($m->is_public) <span class="badge-active">Public</span> @else <span class="badge-voided">Internal</span> @endif
+                    </td>
+                    <td class="px-5 py-3 flex gap-2">
+                        <a href="{{ route('admin.meeting-minutes.edit', $m) }}" class="text-blue-600 text-xs hover:underline">Edit</a>
+                        <form action="{{ route('admin.meeting-minutes.destroy', $m) }}" method="POST" class="inline">
+                            @csrf @method('DELETE')
+                            <button class="text-red-500 text-xs hover:underline" onclick="return confirm('Delete?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                @empty
+                <tr><td colspan="4" class="px-5 py-10 text-center text-gray-400">No meeting minutes.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+        @if($minutes->hasPages())
+        <div class="px-5 py-4 border-t border-gray-100">{{ $minutes->links() }}</div>
+        @endif
+    </div>
+</div>
+@endsection
