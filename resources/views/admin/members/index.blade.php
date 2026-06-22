@@ -44,14 +44,8 @@
                 <tr class="tr">
                     <td class="td">
                         <div class="flex items-center gap-3">
-                            @if($member->user->photo)
-                                <img src="{{ asset('storage/' . $member->user->photo) }}"
-                                     class="w-9 h-9 rounded-full object-cover border border-gray-200 shrink-0" alt="">
-                            @else
-                                <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                                    <span class="text-blue-600 font-bold text-xs">{{ substr($member->user->name, 0, 2) }}</span>
-                                </div>
-                            @endif
+                            <img src="{{ $member->user->photo_url }}"
+                                 class="w-9 h-9 rounded-full object-cover border border-gray-200 shrink-0" alt="">
                             <div>
                                 <p class="font-medium text-gray-900 text-sm">{{ $member->user->name }}</p>
                                 <p class="text-xs text-gray-400">{{ $member->user->phone ?? '—' }}</p>

@@ -11,14 +11,8 @@
         <div class="card-body">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
-                    @if($member->user->photo)
-                        <img src="{{ asset('storage/' . $member->user->photo) }}"
-                             class="w-14 h-14 rounded-xl object-cover border border-gray-200 shrink-0" alt="">
-                    @else
-                        <div class="w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
-                            <span class="text-blue-600 font-bold text-lg">{{ substr($member->user->name, 0, 2) }}</span>
-                        </div>
-                    @endif
+                    <img src="{{ $member->user->photo_url }}"
+                         class="w-14 h-14 rounded-xl object-cover border border-gray-200 shrink-0" alt="">
                     <div>
                         <p class="font-bold text-gray-900">{{ $member->user->name }}</p>
                         <p class="text-xs text-gray-400 font-mono">{{ $member->member_number }} · Joined {{ $member->join_date->format('d M Y') }}</p>
