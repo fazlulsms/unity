@@ -23,6 +23,11 @@ class FdrController extends Controller
         return view('admin.fdr.create');
     }
 
+    public function show(FdrRecord $fdr)
+    {
+        return view('admin.fdr.show', compact('fdr'));
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -37,8 +42,19 @@ class FdrController extends Controller
             'interest_received'        => 'nullable|numeric|min:0',
             'status'                   => 'required|in:active,matured,renewed,closed',
             'is_public_reference'      => 'nullable|boolean',
+            'attachment'               => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:5120',
             'notes'                    => 'nullable|string|max:1000',
         ]);
+
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $filename = $file->hashName();
+            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
+            $dir = $base . '/uploads/fdr';
+            @mkdir($dir, 0755, true);
+            $file->move($dir, $filename);
+            $data['attachment'] = 'fdr/' . $filename;
+        }
 
         $data['is_public_reference'] = $request->boolean('is_public_reference');
         $data['created_by']          = auth()->id();
@@ -70,8 +86,23 @@ class FdrController extends Controller
             'interest_received'        => 'nullable|numeric|min:0',
             'status'                   => 'required|in:active,matured,renewed,closed',
             'is_public_reference'      => 'nullable|boolean',
+            'attachment'               => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:5120',
             'notes'                    => 'nullable|string|max:1000',
         ]);
+
+        if ($request->hasFile('attachment')) {
+            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
+            if ($fdr->attachment) {
+                $oldPath = $base . '/uploads/' . $fdr->attachment;
+                if (file_exists($oldPath)) @unlink($oldPath);
+            }
+            $file = $request->file('attachment');
+            $filename = $file->hashName();
+            $dir = $base . '/uploads/fdr';
+            @mkdir($dir, 0755, true);
+            $file->move($dir, $filename);
+            $data['attachment'] = 'fdr/' . $filename;
+        }
 
         $data['is_public_reference'] = $request->boolean('is_public_reference');
         $data['updated_by']          = auth()->id();

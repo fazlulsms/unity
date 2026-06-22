@@ -30,6 +30,7 @@
                     <td class="px-5 py-3 font-semibold text-green-600">৳{{ number_format($i->amount, 2) }}</td>
                     <td class="px-5 py-3"><span class="badge-{{ $i->status === 'active' ? 'active' : 'voided' }}">{{ ucfirst($i->status) }}</span></td>
                     <td class="px-5 py-3 flex gap-2">
+                        <a href="{{ route('admin.income.show', $i) }}" class="text-gray-500 text-xs hover:underline">View</a>
                         <a href="{{ route('admin.income.edit', $i) }}" class="text-blue-600 text-xs hover:underline">Edit</a>
                         @if($i->isActive())
                         <form action="{{ route('admin.income.void', $i) }}" method="POST" class="inline">

@@ -6,7 +6,7 @@
 @section('content')
 <div class="max-w-lg">
     <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <form action="{{ route('admin.fdr.store') }}" method="POST" class="space-y-4">
+        <form action="{{ route('admin.fdr.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
             @csrf
             <div class="grid sm:grid-cols-2 gap-4">
                 <div>
@@ -72,6 +72,12 @@
                     <label class="block text-xs font-medium text-gray-700 mb-1">Notes</label>
                     <textarea name="notes" rows="3"
                         class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">{{ old('notes') }}</textarea>
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Document / Attachment</label>
+                    <input type="file" name="attachment" accept="image/jpeg,image/png,image/jpg,application/pdf"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                    <p class="mt-1 text-xs text-gray-400">FDR certificate, bank letter — JPG, PNG or PDF, max 5MB</p>
                 </div>
             </div>
             <div class="flex gap-3">

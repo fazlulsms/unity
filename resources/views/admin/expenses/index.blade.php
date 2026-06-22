@@ -46,6 +46,7 @@
                     <td class="px-5 py-3 text-gray-500 capitalize">{{ $e->payment_method }}</td>
                     <td class="px-5 py-3"><span class="badge-{{ $e->status === 'active' ? 'active' : 'voided' }}">{{ ucfirst($e->status) }}</span></td>
                     <td class="px-5 py-3 flex gap-2">
+                        <a href="{{ route('admin.expenses.show', $e) }}" class="text-gray-500 text-xs hover:underline">View</a>
                         <a href="{{ route('admin.expenses.edit', $e) }}" class="text-blue-600 text-xs hover:underline">Edit</a>
                         @if($e->isActive())
                         <form action="{{ route('admin.expenses.void', $e) }}" method="POST" class="inline">

@@ -66,6 +66,11 @@ class IncomeController extends Controller
             ->with('success', 'Income recorded successfully.');
     }
 
+    public function show(Income $income)
+    {
+        return view('admin.income.show', compact('income'));
+    }
+
     public function edit(Income $income)
     {
         return view('admin.income.edit', compact('income'));

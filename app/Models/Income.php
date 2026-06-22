@@ -31,6 +31,11 @@ class Income extends Model
         return $this->status === 'active';
     }
 
+    public function getAttachmentUrlAttribute(): ?string
+    {
+        return $this->attachment ? url('uploads/' . $this->attachment) : null;
+    }
+
     public function getIncomeTypeLabelAttribute(): string
     {
         return match ($this->income_type) {

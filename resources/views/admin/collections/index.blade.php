@@ -96,7 +96,7 @@
                     <th class="th hidden md:table-cell">Method</th>
                     <th class="th hidden lg:table-cell">Payment Date</th>
                     <th class="th hidden lg:table-cell">Reference</th>
-                    <th class="th text-right">Receipt</th>
+                    <th class="th text-right">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -122,14 +122,18 @@
                         {{ $col->transaction_reference ?: '—' }}
                     </td>
                     <td class="td text-right">
-                        @if($col->receipt)
-                        <a href="{{ route('member.receipts.download', $col->receipt) }}"
-                           class="btn btn-sm btn-ghost text-xs" target="_blank">
-                            <i class="fas fa-download"></i>
-                        </a>
-                        @else
-                        <span class="text-gray-300 text-xs">—</span>
-                        @endif
+                        <div class="flex items-center justify-end gap-1">
+                            <a href="{{ route('admin.collections.show', $col) }}"
+                               class="btn btn-sm btn-ghost text-xs text-gray-500">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            @if($col->receipt)
+                            <a href="{{ route('member.receipts.download', $col->receipt) }}"
+                               class="btn btn-sm btn-ghost text-xs" target="_blank">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @empty

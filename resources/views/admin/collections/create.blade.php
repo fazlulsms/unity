@@ -20,7 +20,7 @@
             <p class="font-semibold text-gray-800 text-sm">Payment Details</p>
         </div>
         <div class="card-body">
-            <form action="{{ route('admin.collections.store') }}" method="POST" class="space-y-4">
+            <form action="{{ route('admin.collections.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                 @csrf
 
                 {{-- Member select --}}
@@ -101,6 +101,14 @@
                     <input type="text" name="transaction_reference"
                            value="{{ old('transaction_reference') }}"
                            placeholder="Bank ref, bKash txn ID, etc." class="form-input">
+                </div>
+
+                {{-- Proof attachment --}}
+                <div>
+                    <label class="form-label">Payment Proof / Receipt (optional)</label>
+                    <input type="file" name="proof_attachment" accept="image/jpeg,image/png,image/jpg,application/pdf"
+                           class="form-input file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                    <p class="form-hint">JPG, PNG or PDF, max 5MB</p>
                 </div>
 
                 {{-- Notes --}}

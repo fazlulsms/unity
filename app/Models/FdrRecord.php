@@ -10,7 +10,7 @@ class FdrRecord extends Model
         'bank_name', 'branch', 'fdr_number', 'opening_date', 'maturity_date',
         'principal_amount', 'interest_rate', 'expected_maturity_amount',
         'interest_received', 'status', 'is_public_reference', 'notes',
-        'created_by', 'updated_by',
+        'attachment', 'created_by', 'updated_by',
     ];
 
     protected function casts(): array
@@ -34,6 +34,11 @@ class FdrRecord extends Model
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    public function getAttachmentUrlAttribute(): ?string
+    {
+        return $this->attachment ? url('uploads/' . $this->attachment) : null;
     }
 
     public function getDaysToMaturityAttribute(): int

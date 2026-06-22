@@ -42,7 +42,8 @@
                         @php $c = ['active'=>'active','matured'=>'approved','renewed'=>'pending','closed'=>'voided'][$fdr->status] ?? 'voided'; @endphp
                         <span class="badge-{{ $c }}">{{ ucfirst($fdr->status) }}</span>
                     </td>
-                    <td class="px-5 py-3">
+                    <td class="px-5 py-3 flex gap-2">
+                        <a href="{{ route('admin.fdr.show', $fdr) }}" class="text-gray-500 text-xs hover:underline">View</a>
                         <a href="{{ route('admin.fdr.edit', $fdr) }}" class="text-blue-600 text-xs hover:underline">Edit</a>
                     </td>
                 </tr>

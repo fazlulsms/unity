@@ -43,6 +43,14 @@ class CollectionController extends Controller
         return view('admin.collections.index', compact('collections', 'summary'));
     }
 
+    // ── View single payment detail ───────────────────────────────────────────
+
+    public function show(MonthlyFeeSubmission $collection)
+    {
+        $collection->load('member.user', 'receipt', 'approver', 'creator');
+        return view('admin.collections.show', compact('collection'));
+    }
+
     // ── Add single manual payment ────────────────────────────────────────────
 
     public function create(Request $request)
@@ -64,8 +72,19 @@ class CollectionController extends Controller
             'payment_date'          => 'required|date',
             'payment_method'        => 'required|in:cash,bank,bkash,nagad,rocket,other',
             'transaction_reference' => 'nullable|string|max:100',
+            'proof_attachment'      => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:5120',
             'notes'                 => 'nullable|string|max:500',
         ]);
+
+        if ($request->hasFile('proof_attachment')) {
+            $file = $request->file('proof_attachment');
+            $filename = $file->hashName();
+            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
+            $dir = $base . '/uploads/collections';
+            @mkdir($dir, 0755, true);
+            $file->move($dir, $filename);
+            $data['proof_attachment'] = 'collections/' . $filename;
+        }
 
         $member = Member::findOrFail($data['member_id']);
 

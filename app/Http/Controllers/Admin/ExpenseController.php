@@ -80,6 +80,11 @@ class ExpenseController extends Controller
             ->with('success', 'Expense recorded successfully.');
     }
 
+    public function show(Expense $expense)
+    {
+        return view('admin.expenses.show', compact('expense'));
+    }
+
     public function edit(Expense $expense)
     {
         $categories = Expense::distinct()->pluck('category');
