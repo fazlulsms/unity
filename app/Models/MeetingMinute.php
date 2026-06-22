@@ -25,6 +25,6 @@ class MeetingMinute extends Model
 
     public function getAttachmentUrlAttribute(): ?string
     {
-        return $this->attachment ? asset('storage/' . $this->attachment) : null;
+        return $this->attachment ? url('uploads/' . $this->attachment) : null;
     }
 }

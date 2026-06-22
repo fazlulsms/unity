@@ -50,7 +50,8 @@ class IncomeController extends Controller
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');
             $filename = $file->hashName();
-            $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/income';
+            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
+            $dir = $base . '/uploads/income';
             @mkdir($dir, 0755, true);
             $file->move($dir, $filename);
             $data['attachment'] = 'income/' . $filename;
@@ -84,13 +85,14 @@ class IncomeController extends Controller
         ]);
 
         if ($request->hasFile('attachment')) {
+            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
             if ($income->attachment) {
-                $oldPath = rtrim(config('filesystems.disks.public.root'), '/') . '/' . $income->attachment;
+                $oldPath = $base . '/uploads/' . $income->attachment;
                 if (file_exists($oldPath)) @unlink($oldPath);
             }
             $file = $request->file('attachment');
             $filename = $file->hashName();
-            $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/income';
+            $dir = $base . '/uploads/income';
             @mkdir($dir, 0755, true);
             $file->move($dir, $filename);
             $data['attachment'] = 'income/' . $filename;

@@ -61,7 +61,8 @@ class ExpenseController extends Controller
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');
             $filename = $file->hashName();
-            $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/expenses';
+            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
+            $dir = $base . '/uploads/expenses';
             @mkdir($dir, 0755, true);
             $file->move($dir, $filename);
             $data['attachment'] = 'expenses/' . $filename;
@@ -100,13 +101,14 @@ class ExpenseController extends Controller
         ]);
 
         if ($request->hasFile('attachment')) {
+            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
             if ($expense->attachment) {
-                $oldPath = rtrim(config('filesystems.disks.public.root'), '/') . '/' . $expense->attachment;
+                $oldPath = $base . '/uploads/' . $expense->attachment;
                 if (file_exists($oldPath)) @unlink($oldPath);
             }
             $file = $request->file('attachment');
             $filename = $file->hashName();
-            $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/expenses';
+            $dir = $base . '/uploads/expenses';
             @mkdir($dir, 0755, true);
             $file->move($dir, $filename);
             $data['attachment'] = 'expenses/' . $filename;

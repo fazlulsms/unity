@@ -58,7 +58,8 @@ class FeeSubmissionController extends Controller
         if ($request->hasFile('proof_attachment')) {
             $file = $request->file('proof_attachment');
             $filename = $file->hashName();
-            $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/fee-proofs';
+            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
+            $dir = $base . '/uploads/fee-proofs';
             @mkdir($dir, 0755, true);
             $file->move($dir, $filename);
             $data['proof_attachment'] = 'fee-proofs/' . $filename;

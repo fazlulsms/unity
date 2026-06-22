@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\MeetingMinute;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class MeetingMinuteController extends Controller
 {
@@ -33,7 +32,8 @@ class MeetingMinuteController extends Controller
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');
             $filename = $file->hashName();
-            $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/minutes';
+            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
+            $dir = $base . '/uploads/minutes';
             @mkdir($dir, 0755, true);
             $file->move($dir, $filename);
             $data['attachment'] = 'minutes/' . $filename;
@@ -63,13 +63,14 @@ class MeetingMinuteController extends Controller
         ]);
 
         if ($request->hasFile('attachment')) {
+            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
             if ($meetingMinute->attachment) {
-                $oldPath = rtrim(config('filesystems.disks.public.root'), '/') . '/' . $meetingMinute->attachment;
+                $oldPath = $base . '/uploads/' . $meetingMinute->attachment;
                 if (file_exists($oldPath)) @unlink($oldPath);
             }
             $file = $request->file('attachment');
             $filename = $file->hashName();
-            $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/minutes';
+            $dir = $base . '/uploads/minutes';
             @mkdir($dir, 0755, true);
             $file->move($dir, $filename);
             $data['attachment'] = 'minutes/' . $filename;
@@ -84,7 +85,8 @@ class MeetingMinuteController extends Controller
     public function destroy(MeetingMinute $meetingMinute)
     {
         if ($meetingMinute->attachment) {
-            $oldPath = rtrim(config('filesystems.disks.public.root'), '/') . '/' . $meetingMinute->attachment;
+            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
+            $oldPath = $base . '/uploads/' . $meetingMinute->attachment;
             if (file_exists($oldPath)) @unlink($oldPath);
         }
         $meetingMinute->delete();

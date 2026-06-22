@@ -36,7 +36,8 @@ class MembershipApplicationController extends Controller
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
             $filename = $file->hashName();
-            $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/applications';
+            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
+            $dir = $base . '/uploads/applications';
             @mkdir($dir, 0755, true);
             $file->move($dir, $filename);
             $data['photo'] = 'applications/' . $filename;

@@ -64,6 +64,6 @@ class MonthlyFeeSubmission extends Model
 
     public function getProofUrlAttribute(): ?string
     {
-        return $this->proof_attachment ? asset('storage/' . $this->proof_attachment) : null;
+        return $this->proof_attachment ? url('uploads/' . $this->proof_attachment) : null;
     }
 }

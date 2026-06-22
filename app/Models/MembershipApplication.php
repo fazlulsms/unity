@@ -64,7 +64,7 @@ class MembershipApplication extends Model
 
     public function getPhotoUrlAttribute(): ?string
     {
-        return $this->photo ? asset('storage/' . $this->photo) : null;
+        return $this->photo ? url('uploads/' . $this->photo) : null;
     }
 
     public function statusLabel(): string

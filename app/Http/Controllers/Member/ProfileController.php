@@ -31,13 +31,14 @@ class ProfileController extends Controller
         ]);
 
         if ($request->hasFile('photo')) {
+            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
             if ($user->photo) {
-                $oldPath = rtrim(config('filesystems.disks.public.root'), '/') . '/' . $user->photo;
+                $oldPath = $base . '/uploads/' . $user->photo;
                 if (file_exists($oldPath)) @unlink($oldPath);
             }
             $file = $request->file('photo');
             $filename = $file->hashName();
-            $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/profiles';
+            $dir = $base . '/uploads/profiles';
             @mkdir($dir, 0755, true);
             $file->move($dir, $filename);
             $data['photo'] = 'profiles/' . $filename;
@@ -58,7 +59,8 @@ class ProfileController extends Controller
         }
 
         $photoData = null;
-        $photoPath = $user->photo ? rtrim(config('filesystems.disks.public.root'), '/') . '/' . $user->photo : null;
+        $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
+        $photoPath = $user->photo ? $base . '/uploads/' . $user->photo : null;
 
         if ($photoPath && file_exists($photoPath)) {
             $ext       = strtolower(pathinfo($photoPath, PATHINFO_EXTENSION));
