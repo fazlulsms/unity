@@ -1,0 +1,215 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
+use App\Models\Member;
+use App\Models\MonthlyFeeSubmission;
+use App\Models\Receipt;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class CollectionController extends Controller
+{
+    // ── Collection history + summary ─────────────────────────────────────────
+
+    public function index(Request $request)
+    {
+        $query = MonthlyFeeSubmission::with('member.user', 'receipt')
+            ->where('status', 'approved');
+
+        if ($request->search) {
+            $query->whereHas('member.user', fn($q) =>
+                $q->where('name', 'like', "%{$request->search}%")
+                  ->orWhere('phone', 'like', "%{$request->search}%")
+            );
+        }
+        if ($request->month) $query->where('month', $request->month);
+        if ($request->year)  $query->where('year',  $request->year);
+
+        $collections = $query->latest()->paginate(25)->withQueryString();
+
+        $summary = [
+            'this_month' => MonthlyFeeSubmission::where('status', 'approved')
+                ->where('month', now()->month)->where('year', now()->year)->sum('amount'),
+            'this_year'  => MonthlyFeeSubmission::where('status', 'approved')
+                ->where('year', now()->year)->sum('amount'),
+            'total'      => MonthlyFeeSubmission::where('status', 'approved')->sum('amount'),
+            'count_this_month' => MonthlyFeeSubmission::where('status', 'approved')
+                ->where('month', now()->month)->where('year', now()->year)->count(),
+        ];
+
+        return view('admin.collections.index', compact('collections', 'summary'));
+    }
+
+    // ── Add single manual payment ────────────────────────────────────────────
+
+    public function create(Request $request)
+    {
+        $members  = Member::with('user')->where('status', 'active')
+            ->orderBy('id')->get();
+        $selected = $request->member ? Member::with('user')->find($request->member) : null;
+
+        return view('admin.collections.create', compact('members', 'selected'));
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'member_id'             => 'required|exists:members,id',
+            'month'                 => 'required|integer|between:1,12',
+            'year'                  => 'required|integer|min:2020|max:' . (now()->year + 1),
+            'amount'                => 'required|numeric|min:0.01',
+            'payment_date'          => 'required|date',
+            'payment_method'        => 'required|in:cash,bank,bkash,nagad,rocket,other',
+            'transaction_reference' => 'nullable|string|max:100',
+            'notes'                 => 'nullable|string|max:500',
+        ]);
+
+        $member = Member::findOrFail($data['member_id']);
+
+        DB::transaction(function () use ($data, $member) {
+            $submission = MonthlyFeeSubmission::create(array_merge($data, [
+                'user_id'          => $member->user_id,
+                'status'           => 'approved',
+                'approved_by'      => auth()->id(),
+                'approved_at'      => now(),
+                'approval_remarks' => 'Manual entry by ' . auth()->user()->name,
+                'created_by'       => auth()->id(),
+            ]));
+
+            $this->issueReceipt($submission, $member);
+
+            AuditLog::record('manual_payment_added', $submission, [], [],
+                "Manual payment added for {$member->member_number} — "
+                . date('F', mktime(0, 0, 0, $data['month'], 1)) . " {$data['year']}");
+        });
+
+        return redirect()->route('admin.collections.index')
+            ->with('success', 'Payment recorded and receipt generated for ' . $member->user->name . '.');
+    }
+
+    // ── Bulk monthly collection entry ────────────────────────────────────────
+
+    public function bulk(Request $request)
+    {
+        $month = (int) $request->get('month', now()->month);
+        $year  = (int) $request->get('year',  now()->year);
+
+        $members = Member::with('user')->where('status', 'active')->orderBy('id')->get();
+
+        $existing = MonthlyFeeSubmission::where('status', 'approved')
+            ->where('month', $month)->where('year', $year)
+            ->whereIn('member_id', $members->pluck('id'))
+            ->get()->keyBy('member_id');
+
+        return view('admin.collections.bulk', compact('members', 'existing', 'month', 'year'));
+    }
+
+    public function bulkStore(Request $request)
+    {
+        $request->validate([
+            'month'   => 'required|integer|between:1,12',
+            'year'    => 'required|integer|min:2020',
+            'entries' => 'nullable|array',
+        ]);
+
+        $month   = (int) $request->month;
+        $year    = (int) $request->year;
+        $entries = $request->input('entries', []);
+        $saved   = 0;
+
+        DB::transaction(function () use ($entries, $month, $year, &$saved) {
+            foreach ($entries as $memberId => $row) {
+                if (empty($row['amount']) || (float) $row['amount'] <= 0) continue;
+
+                $member = Member::find($memberId);
+                if (!$member) continue;
+
+                $alreadyPaid = MonthlyFeeSubmission::where('member_id', $memberId)
+                    ->where('month', $month)->where('year', $year)
+                    ->where('status', 'approved')->exists();
+                if ($alreadyPaid) continue;
+
+                $submission = MonthlyFeeSubmission::create([
+                    'member_id'             => $memberId,
+                    'user_id'               => $member->user_id,
+                    'month'                 => $month,
+                    'year'                  => $year,
+                    'amount'                => $row['amount'],
+                    'payment_date'          => $row['payment_date'] ?? now()->toDateString(),
+                    'payment_method'        => $row['payment_method'] ?? 'cash',
+                    'transaction_reference' => $row['reference'] ?? null,
+                    'notes'                 => $row['notes'] ?? null,
+                    'status'                => 'approved',
+                    'approved_by'           => auth()->id(),
+                    'approved_at'           => now(),
+                    'approval_remarks'      => 'Bulk collection entry',
+                    'created_by'            => auth()->id(),
+                ]);
+
+                $this->issueReceipt($submission, $member);
+                $saved++;
+            }
+        });
+
+        return redirect()->route('admin.collections.bulk', ['month' => $month, 'year' => $year])
+            ->with('success', "{$saved} payment(s) recorded for " . date('F', mktime(0, 0, 0, $month, 1)) . " {$year}.");
+    }
+
+    // ── Due list ─────────────────────────────────────────────────────────────
+
+    public function due()
+    {
+        $members = Member::with(['user',
+                'feeSubmissions' => fn($q) => $q->where('status', 'approved')
+            ])
+            ->where('status', 'active')
+            ->orderBy('id')
+            ->get()
+            ->map(function ($member) {
+                $months   = $member->join_date->diffInMonths(now()) + 1;
+                $expected = $months * (float) $member->monthly_fee_amount;
+                $paid     = (float) $member->feeSubmissions->sum('amount');
+                $due      = max(0.0, $expected - $paid);
+
+                $lastPayment = $member->feeSubmissions->sortByDesc('payment_date')->first();
+
+                return [
+                    'member'       => $member,
+                    'expected'     => $expected,
+                    'paid'         => $paid,
+                    'due'          => $due,
+                    'last_payment' => $lastPayment,
+                ];
+            })
+            ->filter(fn($r) => $r['due'] > 0)
+            ->sortByDesc('due')
+            ->values();
+
+        $totalDue = $members->sum('due');
+
+        return view('admin.collections.due', compact('members', 'totalDue'));
+    }
+
+    // ── Private: issue receipt for a submission ───────────────────────────────
+
+    private function issueReceipt(MonthlyFeeSubmission $submission, Member $member): void
+    {
+        $receipt = Receipt::create([
+            'receipt_number'            => Receipt::generateReceiptNumber(),
+            'monthly_fee_submission_id' => $submission->id,
+            'member_id'                 => $member->id,
+            'member_name'               => $member->user->name,
+            'month'                     => $submission->month,
+            'year'                      => $submission->year,
+            'amount'                    => $submission->amount,
+            'payment_method'            => $submission->payment_method,
+            'payment_date'              => $submission->payment_date,
+            'approved_date'             => now()->toDateString(),
+            'authorized_by'             => auth()->user()->name,
+        ]);
+        $submission->update(['receipt_id' => $receipt->id]);
+    }
+}

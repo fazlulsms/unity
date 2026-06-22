@@ -27,6 +27,11 @@
 
 {{-- Finance --}}
 <p class="sidebar-section">Finance</p>
+<a href="{{ route('admin.collections.index') }}"
+   class="sidebar-link {{ request()->routeIs('admin.collections.*') ? 'active' : '' }}">
+    <i class="fas fa-bangladeshi-taka-sign w-4 text-center"></i>
+    <span>Collections</span>
+</a>
 <a href="{{ route('admin.payments.index') }}"
    class="sidebar-link {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
     <i class="fas fa-circle-check w-4 text-center"></i>

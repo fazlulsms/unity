@@ -70,6 +70,14 @@ Route::middleware(['auth', 'verified', 'role:admin|treasurer'])->prefix('admin')
     Route::post('/members/{member}/deactivate', [Admin\MemberController::class, 'deactivate'])->name('members.deactivate');
     Route::post('/members/{member}/reactivate', [Admin\MemberController::class, 'reactivate'])->name('members.reactivate');
 
+    // Collections
+    Route::get('/collections',              [Admin\CollectionController::class, 'index'])->name('collections.index');
+    Route::get('/collections/create',       [Admin\CollectionController::class, 'create'])->name('collections.create');
+    Route::post('/collections',             [Admin\CollectionController::class, 'store'])->name('collections.store');
+    Route::get('/collections/bulk',         [Admin\CollectionController::class, 'bulk'])->name('collections.bulk');
+    Route::post('/collections/bulk',        [Admin\CollectionController::class, 'bulkStore'])->name('collections.bulk-store');
+    Route::get('/collections/due',          [Admin\CollectionController::class, 'due'])->name('collections.due');
+
     // Payment Approvals
     Route::get('/payments', [Admin\PaymentApprovalController::class, 'index'])->name('payments.index');
     Route::get('/payments/{submission}', [Admin\PaymentApprovalController::class, 'show'])->name('payments.show');
