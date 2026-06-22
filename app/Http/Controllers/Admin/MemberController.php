@@ -171,25 +171,6 @@ class MemberController extends Controller
         return $pdf->download("member-profile-{$member->member_number}.pdf");
     }
 
-    public function photoDebug()
-    {
-        $members = Member::with('user')->orderBy('id')->get();
-        $base    = User::uploadsBase() . '/uploads';
-
-        $rows = $members->map(fn ($member) => [
-            'name'         => $member->user->name,
-            'number'       => $member->member_number,
-            'db_path'      => $member->user->photo,
-            'abs_path'     => $member->user->photo ? ($base . '/' . $member->user->photo) : null,
-            'file_exists'  => $member->user->photo
-                                ? file_exists($base . '/' . $member->user->photo)
-                                : false,
-            'resolved_url' => $member->user->photo_url,
-        ]);
-
-        return view('admin.debug.photos', compact('rows', 'base'));
-    }
-
     public function addPayment(Request $request, Member $member)
     {
         $data = $request->validate([
