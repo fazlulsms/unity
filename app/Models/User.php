@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\ResolvesUploadedPhoto;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -9,7 +10,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, ResolvesUploadedPhoto;
 
     protected $fillable = [
         'name', 'email', 'password', 'phone', 'photo', 'address',
@@ -67,12 +68,7 @@ class User extends Authenticatable
 
     public function getPhotoUrlAttribute(): string
     {
-        if ($this->photo) {
-            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
-            if (file_exists($base . '/uploads/' . $this->photo)) {
-                return url('uploads/' . $this->photo);
-            }
-        }
-        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name ?? '') . '&color=7F9CF5&background=EBF4FF';
+        return static::resolvedPhotoUrl($this->photo)
+            ?? 'https://ui-avatars.com/api/?name=' . urlencode($this->name ?? '') . '&color=7F9CF5&background=EBF4FF';
     }
 }

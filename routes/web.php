@@ -93,6 +93,9 @@ Route::middleware(['auth', 'verified', 'role:admin|treasurer'])->prefix('admin')
     // Meeting Minutes
     Route::resource('meeting-minutes', Admin\MeetingMinuteController::class);
 
+    // Temporary debug — remove after photo verification
+    Route::get('/debug/photos', [Admin\MemberController::class, 'photoDebug'])->name('debug.photos');
+
     // Reports
     Route::get('/reports', [Admin\ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/members', [Admin\ReportController::class, 'members'])->name('reports.members');

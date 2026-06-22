@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Traits\ResolvesUploadedPhoto;
 use Illuminate\Database\Eloquent\Model;
 
 class MembershipApplication extends Model
 {
+    use ResolvesUploadedPhoto;
     protected $fillable = [
         'full_name', 'photo', 'phone', 'email', 'address', 'date_of_birth',
         'profession', 'emergency_contact', 'nominee_name', 'nominee_contact',
@@ -64,13 +66,7 @@ class MembershipApplication extends Model
 
     public function getPhotoUrlAttribute(): ?string
     {
-        if ($this->photo) {
-            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
-            if (file_exists($base . '/uploads/' . $this->photo)) {
-                return url('uploads/' . $this->photo);
-            }
-        }
-        return null;
+        return static::resolvedPhotoUrl($this->photo);
     }
 
     public function statusLabel(): string

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Member;
 use App\Models\MonthlyFeeSubmission;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -155,11 +156,9 @@ class MemberController extends Controller
         $member->load('user', 'application');
 
         $photoData = null;
-        $photoPath = $member->user->photo
-            ? storage_path('app/public/' . $member->user->photo)
-            : null;
+        $photoPath = User::resolvedPhotoPath($member->user->photo);
 
-        if ($photoPath && file_exists($photoPath)) {
+        if ($photoPath) {
             $ext       = strtolower(pathinfo($photoPath, PATHINFO_EXTENSION));
             $mime      = $ext === 'png' ? 'image/png' : 'image/jpeg';
             $photoData = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($photoPath));
@@ -170,6 +169,25 @@ class MemberController extends Controller
         $pdf->setPaper('a4', 'portrait');
 
         return $pdf->download("member-profile-{$member->member_number}.pdf");
+    }
+
+    public function photoDebug()
+    {
+        $members = Member::with('user')->orderBy('id')->get();
+        $base    = User::uploadsBase() . '/uploads';
+
+        $rows = $members->map(fn ($member) => [
+            'name'         => $member->user->name,
+            'number'       => $member->member_number,
+            'db_path'      => $member->user->photo,
+            'abs_path'     => $member->user->photo ? ($base . '/' . $member->user->photo) : null,
+            'file_exists'  => $member->user->photo
+                                ? file_exists($base . '/' . $member->user->photo)
+                                : false,
+            'resolved_url' => $member->user->photo_url,
+        ]);
+
+        return view('admin.debug.photos', compact('rows', 'base'));
     }
 
     public function addPayment(Request $request, Member $member)
