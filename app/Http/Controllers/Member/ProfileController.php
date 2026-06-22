@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ProfileController extends Controller
 {
@@ -39,5 +40,29 @@ class ProfileController extends Controller
         $user->update($data);
 
         return back()->with('success', 'Profile updated successfully.');
+    }
+
+    public function profilePdf()
+    {
+        $user   = Auth::user();
+        $member = $user->member;
+
+        if (!$member) {
+            return redirect()->route('member.profile')->with('error', 'Member record not found.');
+        }
+
+        $photoData = null;
+        $photoPath = $user->photo ? storage_path('app/public/' . $user->photo) : null;
+
+        if ($photoPath && file_exists($photoPath)) {
+            $ext       = strtolower(pathinfo($photoPath, PATHINFO_EXTENSION));
+            $mime      = $ext === 'png' ? 'image/png' : 'image/jpeg';
+            $photoData = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($photoPath));
+        }
+
+        $pdf = Pdf::loadView('admin.reports.member-profile-pdf', compact('member', 'photoData'));
+        $pdf->setPaper('a4', 'portrait');
+
+        return $pdf->download("my-member-profile-{$member->member_number}.pdf");
     }
 }

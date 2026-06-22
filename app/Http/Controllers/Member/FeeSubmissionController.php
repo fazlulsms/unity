@@ -87,6 +87,62 @@ class FeeSubmissionController extends Controller
         return view('member.fees.receipt', compact('receipt'));
     }
 
+    public function statement(Request $request)
+    {
+        $member = Auth::user()->member;
+
+        if (!$member) {
+            return redirect()->route('member.dashboard')->with('error', 'Member profile not found.');
+        }
+
+        $year     = (int) $request->get('year', now()->year);
+        $joinDate = $member->join_date;
+
+        $startMonth = ($joinDate->year === $year) ? $joinDate->month : 1;
+        $endMonth   = ($year >= now()->year) ? now()->month : 12;
+
+        $rows = [];
+
+        if ($joinDate->year <= $year) {
+            $submissions = $member->approvedFeeSubmissions()
+                ->where('year', $year)
+                ->with('receipt')
+                ->get()
+                ->keyBy(fn($s) => str_pad($s->month, 2, '0', STR_PAD_LEFT));
+
+            for ($m = $startMonth; $m <= $endMonth; $m++) {
+                $key = str_pad($m, 2, '0', STR_PAD_LEFT);
+                $sub = $submissions->get($key);
+
+                $expected = (float) $member->monthly_fee_amount;
+                $paid     = $sub ? (float) $sub->amount : 0.0;
+                $due      = max(0.0, $expected - $paid);
+
+                $rows[] = [
+                    'month'          => $m,
+                    'month_name'     => date('F', mktime(0, 0, 0, $m, 1)),
+                    'expected'       => $expected,
+                    'paid'           => $paid,
+                    'due'            => $due,
+                    'method'         => $sub ? ucfirst($sub->payment_method) : '—',
+                    'payment_date'   => $sub?->payment_date?->format('d M Y') ?? '—',
+                    'receipt_number' => $sub?->receipt?->receipt_number ?? '—',
+                    'status'         => $paid >= $expected ? 'paid' : ($paid > 0 ? 'partial' : 'due'),
+                ];
+            }
+        }
+
+        $totals = [
+            'expected' => collect($rows)->sum('expected'),
+            'paid'     => collect($rows)->sum('paid'),
+            'due'      => collect($rows)->sum('due'),
+        ];
+
+        $availableYears = range(max($joinDate->year, 2020), now()->year);
+
+        return view('member.statement', compact('member', 'rows', 'totals', 'year', 'availableYears'));
+    }
+
     private function authorizeSubmission(MonthlyFeeSubmission $submission): void
     {
         $member = Auth::user()->member;

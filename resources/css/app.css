@@ -21,7 +21,10 @@
     .badge-voided    { @apply badge bg-gray-100 text-gray-500 ring-1 ring-gray-200; }
     .badge-matured   { @apply badge bg-purple-50 text-purple-700 ring-1 ring-purple-200; }
     .badge-renewed   { @apply badge bg-teal-50 text-teal-700 ring-1 ring-teal-200; }
-    .badge-closed    { @apply badge bg-slate-100 text-slate-600 ring-1 ring-slate-200; }
+    .badge-closed         { @apply badge bg-slate-100 text-slate-600 ring-1 ring-slate-200; }
+    .badge-under-review   { @apply badge bg-sky-50 text-sky-700 ring-1 ring-sky-200; }
+    .badge-more-info      { @apply badge bg-orange-50 text-orange-700 ring-1 ring-orange-200; }
+    .badge-photo-required { @apply badge bg-violet-50 text-violet-700 ring-1 ring-violet-200; }
 
     /* ── Buttons ─────────────────────────────────────────── */
     .btn {

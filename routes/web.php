@@ -39,6 +39,8 @@ Route::middleware(['auth', 'verified', 'role:member|admin|treasurer'])->prefix('
     Route::post('/fees', [Member\FeeSubmissionController::class, 'store'])->name('fees.store');
     Route::get('/fees/{submission}', [Member\FeeSubmissionController::class, 'show'])->name('fees.show');
     Route::get('/receipts/{receipt}/download', [Member\FeeSubmissionController::class, 'downloadReceipt'])->name('receipts.download');
+    Route::get('/statement', [Member\FeeSubmissionController::class, 'statement'])->name('statement');
+    Route::get('/profile-pdf', [Member\ProfileController::class, 'profilePdf'])->name('profile-pdf');
 });
 
 // ─── Admin / Treasurer Panel ─────────────────────────────────────────────────
@@ -48,15 +50,25 @@ Route::middleware(['auth', 'verified', 'role:admin|treasurer'])->prefix('admin')
     // Membership Applications
     Route::get('/applications', [Admin\ApplicationController::class, 'index'])->name('applications.index');
     Route::get('/applications/{application}', [Admin\ApplicationController::class, 'show'])->name('applications.show');
+    Route::get('/applications/{application}/edit', [Admin\ApplicationController::class, 'edit'])->name('applications.edit');
+    Route::patch('/applications/{application}', [Admin\ApplicationController::class, 'update'])->name('applications.update');
     Route::post('/applications/{application}/approve', [Admin\ApplicationController::class, 'approve'])->name('applications.approve');
     Route::post('/applications/{application}/reject', [Admin\ApplicationController::class, 'reject'])->name('applications.reject');
+    Route::post('/applications/{application}/under-review', [Admin\ApplicationController::class, 'underReview'])->name('applications.under-review');
+    Route::post('/applications/{application}/more-info', [Admin\ApplicationController::class, 'moreInfo'])->name('applications.more-info');
+    Route::post('/applications/{application}/photo-required', [Admin\ApplicationController::class, 'photoRequired'])->name('applications.photo-required');
+    Route::post('/applications/{application}/note', [Admin\ApplicationController::class, 'addNote'])->name('applications.note');
 
     // Members
     Route::get('/members', [Admin\MemberController::class, 'index'])->name('members.index');
+    Route::get('/members/{member}/statement', [Admin\MemberController::class, 'statement'])->name('members.statement');
+    Route::get('/members/{member}/profile-pdf', [Admin\MemberController::class, 'profilePdf'])->name('members.profile-pdf');
     Route::get('/members/{member}', [Admin\MemberController::class, 'show'])->name('members.show');
     Route::get('/members/{member}/edit', [Admin\MemberController::class, 'edit'])->name('members.edit');
     Route::patch('/members/{member}', [Admin\MemberController::class, 'update'])->name('members.update');
     Route::post('/members/{member}/payment', [Admin\MemberController::class, 'addPayment'])->name('members.payment');
+    Route::post('/members/{member}/deactivate', [Admin\MemberController::class, 'deactivate'])->name('members.deactivate');
+    Route::post('/members/{member}/reactivate', [Admin\MemberController::class, 'reactivate'])->name('members.reactivate');
 
     // Payment Approvals
     Route::get('/payments', [Admin\PaymentApprovalController::class, 'index'])->name('payments.index');
