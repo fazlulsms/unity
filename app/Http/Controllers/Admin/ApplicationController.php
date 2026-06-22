@@ -73,8 +73,14 @@ class ApplicationController extends Controller
             $filename = $file->hashName();
             $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/applications';
             @mkdir($dir, 0755, true);
-            $file->move($dir, $filename);
-            $data['photo'] = 'applications/' . $filename;
+            $dest = $dir . '/' . $filename;
+            $written = file_put_contents($dest, file_get_contents($file->getRealPath()));
+            if ($written !== false) {
+                $data['photo'] = 'applications/' . $filename;
+            } else {
+                \Log::error('Photo upload failed', ['dest' => $dest, 'temp' => $file->getRealPath(), 'err' => error_get_last()]);
+                unset($data['photo']);
+            }
         } else {
             unset($data['photo']);
         }
