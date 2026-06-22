@@ -34,7 +34,7 @@
                 ['label' => 'Nominee Contact', 'value' => $application->nominee_contact ?: '—'],
                 ['label' => 'Existing Member', 'value' => $application->is_existing_member ? 'Yes' : 'No'],
                 ['label' => 'Requested Monthly Fee', 'value' => '৳' . number_format($application->monthly_fee_amount, 2)],
-            ] as [$label, $value])
+            ] as ['label' => $label, 'value' => $value])
             <div>
                 <p class="text-xs text-gray-400 font-medium">{{ $label }}</p>
                 <p class="text-sm text-gray-900 mt-0.5">{{ $value }}</p>
