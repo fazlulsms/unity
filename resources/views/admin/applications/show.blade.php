@@ -38,11 +38,9 @@
                     </p>
                     @endif
                 </div>
-                @if($application->isOpen())
                 <a href="{{ route('admin.applications.edit', $application) }}" class="btn btn-sm btn-secondary shrink-0">
                     <i class="fas fa-pen"></i> Edit Data
                 </a>
-                @endif
             </div>
         </div>
     </div>
