@@ -17,5 +17,9 @@ export default {
         },
     },
 
+    safelist: [
+        { pattern: /^badge-/ },
+    ],
+
     plugins: [forms],
 };

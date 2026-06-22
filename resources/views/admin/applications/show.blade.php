@@ -47,10 +47,10 @@
         </div>
     </div>
 
-    <div class="grid lg:grid-cols-3 gap-5">
+    <div class="flex flex-col xl:flex-row gap-5">
 
         {{-- Submitted details --}}
-        <div class="lg:col-span-2 space-y-5">
+        <div class="flex-1 min-w-0 space-y-5">
             <div class="card">
                 <div class="card-header">
                     <p class="font-semibold text-gray-800 text-sm">Submitted Details</p>
@@ -117,7 +117,7 @@
         </div>
 
         {{-- Action panel --}}
-        <div class="space-y-4">
+        <div class="xl:w-80 shrink-0 space-y-4">
 
             @if($application->isOpen())
             {{-- Quick status actions --}}
