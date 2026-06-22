@@ -59,7 +59,12 @@ class ExpenseController extends Controller
         ]);
 
         if ($request->hasFile('attachment')) {
-            $data['attachment'] = $request->file('attachment')->store('expenses', 'public');
+            $file = $request->file('attachment');
+            $filename = $file->hashName();
+            $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/expenses';
+            @mkdir($dir, 0755, true);
+            $file->move($dir, $filename);
+            $data['attachment'] = 'expenses/' . $filename;
         }
 
         $data['created_by'] = auth()->id();
@@ -96,9 +101,15 @@ class ExpenseController extends Controller
 
         if ($request->hasFile('attachment')) {
             if ($expense->attachment) {
-                Storage::disk('public')->delete($expense->attachment);
+                $oldPath = rtrim(config('filesystems.disks.public.root'), '/') . '/' . $expense->attachment;
+                if (file_exists($oldPath)) @unlink($oldPath);
             }
-            $data['attachment'] = $request->file('attachment')->store('expenses', 'public');
+            $file = $request->file('attachment');
+            $filename = $file->hashName();
+            $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/expenses';
+            @mkdir($dir, 0755, true);
+            $file->move($dir, $filename);
+            $data['attachment'] = 'expenses/' . $filename;
         }
 
         $data['updated_by'] = auth()->id();

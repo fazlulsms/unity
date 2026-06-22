@@ -32,9 +32,15 @@ class ProfileController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($user->photo) {
-                Storage::disk('public')->delete($user->photo);
+                $oldPath = rtrim(config('filesystems.disks.public.root'), '/') . '/' . $user->photo;
+                if (file_exists($oldPath)) @unlink($oldPath);
             }
-            $data['photo'] = $request->file('photo')->store('profiles', 'public');
+            $file = $request->file('photo');
+            $filename = $file->hashName();
+            $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/profiles';
+            @mkdir($dir, 0755, true);
+            $file->move($dir, $filename);
+            $data['photo'] = 'profiles/' . $filename;
         }
 
         $user->update($data);
@@ -52,7 +58,7 @@ class ProfileController extends Controller
         }
 
         $photoData = null;
-        $photoPath = $user->photo ? storage_path('app/public/' . $user->photo) : null;
+        $photoPath = $user->photo ? rtrim(config('filesystems.disks.public.root'), '/') . '/' . $user->photo : null;
 
         if ($photoPath && file_exists($photoPath)) {
             $ext       = strtolower(pathinfo($photoPath, PATHINFO_EXTENSION));

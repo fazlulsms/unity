@@ -48,7 +48,12 @@ class IncomeController extends Controller
         ]);
 
         if ($request->hasFile('attachment')) {
-            $data['attachment'] = $request->file('attachment')->store('income', 'public');
+            $file = $request->file('attachment');
+            $filename = $file->hashName();
+            $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/income';
+            @mkdir($dir, 0755, true);
+            $file->move($dir, $filename);
+            $data['attachment'] = 'income/' . $filename;
         }
 
         $data['created_by'] = auth()->id();
@@ -80,9 +85,15 @@ class IncomeController extends Controller
 
         if ($request->hasFile('attachment')) {
             if ($income->attachment) {
-                Storage::disk('public')->delete($income->attachment);
+                $oldPath = rtrim(config('filesystems.disks.public.root'), '/') . '/' . $income->attachment;
+                if (file_exists($oldPath)) @unlink($oldPath);
             }
-            $data['attachment'] = $request->file('attachment')->store('income', 'public');
+            $file = $request->file('attachment');
+            $filename = $file->hashName();
+            $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/income';
+            @mkdir($dir, 0755, true);
+            $file->move($dir, $filename);
+            $data['attachment'] = 'income/' . $filename;
         }
 
         $data['updated_by'] = auth()->id();

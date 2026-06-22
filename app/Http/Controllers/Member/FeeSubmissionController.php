@@ -56,7 +56,12 @@ class FeeSubmissionController extends Controller
         ]);
 
         if ($request->hasFile('proof_attachment')) {
-            $data['proof_attachment'] = $request->file('proof_attachment')->store('fee-proofs', 'public');
+            $file = $request->file('proof_attachment');
+            $filename = $file->hashName();
+            $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/fee-proofs';
+            @mkdir($dir, 0755, true);
+            $file->move($dir, $filename);
+            $data['proof_attachment'] = 'fee-proofs/' . $filename;
         }
 
         $data['member_id']  = $member->id;

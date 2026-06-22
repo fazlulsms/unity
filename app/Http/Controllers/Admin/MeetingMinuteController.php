@@ -31,7 +31,12 @@ class MeetingMinuteController extends Controller
         ]);
 
         if ($request->hasFile('attachment')) {
-            $data['attachment'] = $request->file('attachment')->store('minutes', 'public');
+            $file = $request->file('attachment');
+            $filename = $file->hashName();
+            $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/minutes';
+            @mkdir($dir, 0755, true);
+            $file->move($dir, $filename);
+            $data['attachment'] = 'minutes/' . $filename;
         }
 
         $data['is_public']  = $request->boolean('is_public');
@@ -59,9 +64,15 @@ class MeetingMinuteController extends Controller
 
         if ($request->hasFile('attachment')) {
             if ($meetingMinute->attachment) {
-                Storage::disk('public')->delete($meetingMinute->attachment);
+                $oldPath = rtrim(config('filesystems.disks.public.root'), '/') . '/' . $meetingMinute->attachment;
+                if (file_exists($oldPath)) @unlink($oldPath);
             }
-            $data['attachment'] = $request->file('attachment')->store('minutes', 'public');
+            $file = $request->file('attachment');
+            $filename = $file->hashName();
+            $dir = rtrim(config('filesystems.disks.public.root'), '/') . '/minutes';
+            @mkdir($dir, 0755, true);
+            $file->move($dir, $filename);
+            $data['attachment'] = 'minutes/' . $filename;
         }
 
         $data['is_public'] = $request->boolean('is_public');
@@ -73,7 +84,8 @@ class MeetingMinuteController extends Controller
     public function destroy(MeetingMinute $meetingMinute)
     {
         if ($meetingMinute->attachment) {
-            Storage::disk('public')->delete($meetingMinute->attachment);
+            $oldPath = rtrim(config('filesystems.disks.public.root'), '/') . '/' . $meetingMinute->attachment;
+            if (file_exists($oldPath)) @unlink($oldPath);
         }
         $meetingMinute->delete();
         return back()->with('success', 'Meeting minutes deleted.');
