@@ -64,7 +64,13 @@ class MembershipApplication extends Model
 
     public function getPhotoUrlAttribute(): ?string
     {
-        return $this->photo ? url('uploads/' . $this->photo) : null;
+        if ($this->photo) {
+            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
+            if (file_exists($base . '/uploads/' . $this->photo)) {
+                return url('uploads/' . $this->photo);
+            }
+        }
+        return null;
     }
 
     public function statusLabel(): string

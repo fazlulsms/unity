@@ -68,7 +68,10 @@ class User extends Authenticatable
     public function getPhotoUrlAttribute(): string
     {
         if ($this->photo) {
-            return url('uploads/' . $this->photo);
+            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
+            if (file_exists($base . '/uploads/' . $this->photo)) {
+                return url('uploads/' . $this->photo);
+            }
         }
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name ?? '') . '&color=7F9CF5&background=EBF4FF';
     }
