@@ -8,4 +8,12 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    build: {
+        rollupOptions: {
+            output: {
+                // Stable CSS filename — prevents hash changes breaking production deploys
+                assetFileNames: 'assets/[name][extname]',
+            },
+        },
+    },
 });
