@@ -4,7 +4,7 @@
 @section('sidebar') @include('partials.admin-nav') @endsection
 
 @section('content')
-<div class="max-w-5xl space-y-5">
+<div class="space-y-5">
 
     @if(session('success'))<div class="alert-success">{{ session('success') }}</div>@endif
     @if(session('error'))<div class="alert-error">{{ session('error') }}</div>@endif
