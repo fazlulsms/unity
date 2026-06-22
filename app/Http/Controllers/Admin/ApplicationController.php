@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class ApplicationController extends Controller
 {
@@ -62,6 +63,7 @@ class ApplicationController extends Controller
                 'nominee_contact'   => $application->nominee_contact,
             ]);
 
+            Role::firstOrCreate(['name' => 'member', 'guard_name' => 'web']);
             $user->assignRole('member');
 
             $memberCount = Member::count() + 1;
