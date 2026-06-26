@@ -13,7 +13,6 @@
     <div class="card">
         <div class="card-body">
             <div class="flex flex-col sm:flex-row items-start gap-5">
-                {{-- Photo --}}
                 @if($application->photo_url)
                     <img src="{{ $application->photo_url }}" alt="Photo"
                          class="w-24 h-24 rounded-xl object-cover border border-gray-200 shrink-0">
@@ -38,9 +37,19 @@
                     </p>
                     @endif
                 </div>
-                <a href="{{ route('admin.applications.edit', $application) }}" class="btn btn-sm btn-secondary shrink-0">
-                    <i class="fas fa-pen"></i> Edit Data
-                </a>
+                <div class="flex flex-wrap gap-2 shrink-0">
+                    <a href="{{ route('admin.applications.edit', $application) }}" class="btn btn-sm btn-secondary">
+                        <i class="fas fa-pen"></i> Edit Data
+                    </a>
+                    @if($application->email)
+                    <form method="POST" action="{{ route('admin.email.application.confirmation', $application) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-ghost text-blue-600 hover:bg-blue-50">
+                            <i class="fas fa-envelope"></i> Resend Confirmation
+                        </button>
+                    </form>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
@@ -91,7 +100,7 @@
                 </div>
                 <div class="card-body grid sm:grid-cols-3 gap-4">
                     <div><p class="text-xs text-gray-400 font-medium">Member ID</p>
-                         <p class="text-sm font-bold text-gray-900">{{ $application->member->member_number }}</p></div>
+                         <p class="text-sm font-bold text-gray-900 font-mono">{{ $application->member->member_number }}</p></div>
                     <div><p class="text-xs text-gray-400 font-medium">Join Date</p>
                          <p class="text-sm text-gray-800">{{ $application->member->join_date->format('d M Y') }}</p></div>
                     <div><p class="text-xs text-gray-400 font-medium">Monthly Fee</p>
@@ -112,6 +121,9 @@
                 </div>
             </div>
             @endif
+
+            {{-- Email history --}}
+            @include('partials.email-log', ['emailLogs' => $emailLogs])
         </div>
 
         {{-- Action panel --}}

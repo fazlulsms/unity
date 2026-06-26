@@ -7,10 +7,9 @@ use App\Mail\PaymentSubmitted;
 use App\Mail\PaymentSubmittedAdmin;
 use App\Models\MonthlyFeeSubmission;
 use App\Models\Receipt;
-use App\Models\User;
+use App\Support\MailHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 
 class FeeSubmissionController extends Controller
 {
@@ -76,28 +75,19 @@ class FeeSubmissionController extends Controller
 
         $submission = MonthlyFeeSubmission::create($data);
 
-        // Email confirmation to member
         $memberEmail = Auth::user()->email;
-        if ($memberEmail && !str_ends_with($memberEmail, '@unity.local')) {
-            try {
-                Mail::to($memberEmail)->send(new PaymentSubmitted($submission));
-            } catch (\Exception $e) {
-                logger()->error('Payment submitted email (member) failed: ' . $e->getMessage());
-            }
+        if (MailHelper::validEmail($memberEmail)) {
+            MailHelper::send(
+                $memberEmail, Auth::user()->name,
+                new PaymentSubmitted($submission),
+                $submission, Auth::id()
+            );
         }
 
-        // Email notification to admins and treasurers
-        $admins = User::role(['admin', 'treasurer'])
-            ->whereNotNull('email')
-            ->where('email', 'not like', '%@unity.local')
-            ->get();
-        foreach ($admins as $admin) {
-            try {
-                Mail::to($admin->email)->send(new PaymentSubmittedAdmin($submission));
-            } catch (\Exception $e) {
-                logger()->error("Payment submitted admin email failed for {$admin->email}: " . $e->getMessage());
-            }
-        }
+        MailHelper::sendToAdmins(
+            fn() => new PaymentSubmittedAdmin($submission),
+            $submission, Auth::id()
+        );
 
         return redirect()->route('member.fees.index')
             ->with('success', 'Payment submitted successfully. It is pending admin approval.');

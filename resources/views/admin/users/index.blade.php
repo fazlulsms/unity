@@ -6,96 +6,90 @@
 @section('content')
 <div class="space-y-5">
 
+    @if(session('success'))<div class="alert-success">{{ session('success') }}</div>@endif
+    @if(session('error'))<div class="alert-error">{{ session('error') }}</div>@endif
+
     {{-- Filters --}}
-    <form method="GET" class="flex flex-wrap gap-3 items-end">
-        <div>
-            <label class="block text-xs font-medium text-slate-500 mb-1">Search</label>
-            <input type="text" name="search" value="{{ request('search') }}"
-                   placeholder="Name, email, phone…"
-                   class="input-field w-56 text-sm">
-        </div>
-        <div>
-            <label class="block text-xs font-medium text-slate-500 mb-1">Role</label>
-            <select name="role" class="input-field text-sm">
-                <option value="">All Roles</option>
-                @foreach($roles as $role)
-                    <option value="{{ $role->name }}" {{ request('role') === $role->name ? 'selected' : '' }}>
-                        {{ ucfirst($role->name) }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-        <button type="submit" class="btn-primary text-sm">Filter</button>
+    <form method="GET" class="filter-bar">
+        <input type="text" name="search" value="{{ request('search') }}"
+               placeholder="Name, email, phone…" class="form-input max-w-xs text-sm">
+        <select name="role" class="form-select w-auto text-sm">
+            <option value="">All Roles</option>
+            @foreach($roles as $role)
+                <option value="{{ $role->name }}" {{ request('role') === $role->name ? 'selected' : '' }}>
+                    {{ ucfirst(str_replace('_', ' ', $role->name)) }}
+                </option>
+            @endforeach
+        </select>
+        <button type="submit" class="btn-primary btn-sm">Filter</button>
         @if(request('search') || request('role'))
-            <a href="{{ route('admin.users.index') }}" class="btn-secondary text-sm">Clear</a>
+            <a href="{{ route('admin.users.index') }}" class="btn-ghost btn-sm">Clear</a>
         @endif
+        <span class="ml-auto text-xs text-gray-400">{{ $users->total() }} users</span>
     </form>
 
     {{-- Table --}}
-    <div class="card overflow-hidden">
-        <table class="w-full text-sm">
-            <thead>
-                <tr class="bg-slate-50 text-left">
-                    <th class="table-th">User</th>
-                    <th class="table-th">Email</th>
-                    <th class="table-th">Role</th>
-                    <th class="table-th">Status</th>
-                    <th class="table-th">Joined</th>
-                    <th class="table-th text-right">Actions</th>
+    <div class="table-wrap">
+        <table class="w-full">
+            <thead class="bg-gray-50 border-b border-gray-100">
+                <tr>
+                    <th class="th">User</th>
+                    <th class="th hidden md:table-cell">Email</th>
+                    <th class="th">Role</th>
+                    <th class="th hidden sm:table-cell">Status</th>
+                    <th class="th hidden lg:table-cell">Joined</th>
+                    <th class="th text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody>
                 @forelse($users as $user)
-                <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="table-td">
+                <tr class="tr">
+                    <td class="td">
                         <div class="flex items-center gap-3">
                             <img src="{{ $user->photo_url }}" alt="" class="w-8 h-8 rounded-full object-cover shrink-0">
                             <a href="{{ route('admin.users.show', $user) }}"
-                               class="font-medium text-slate-800 hover:text-blue-600">{{ $user->name }}</a>
+                               class="font-medium text-gray-900 hover:text-blue-600 text-sm">{{ $user->name }}</a>
                         </div>
                     </td>
-                    <td class="table-td text-slate-500">
+                    <td class="td hidden md:table-cell text-gray-500 text-xs">
                         @if(str_ends_with($user->email, '@unity.local'))
-                            <span class="italic text-slate-400 text-xs">No email (local)</span>
+                            <span class="italic text-gray-400">No email (local account)</span>
                         @else
                             {{ $user->email }}
                         @endif
                     </td>
-                    <td class="table-td">
+                    <td class="td">
                         @foreach($user->roles as $role)
-                            <span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full
-                                {{ $role->name === 'admin' ? 'bg-red-100 text-red-700' : '' }}
-                                {{ $role->name === 'treasurer' ? 'bg-purple-100 text-purple-700' : '' }}
-                                {{ $role->name === 'member' ? 'bg-blue-100 text-blue-700' : '' }}
-                                {{ $role->name === 'super_admin' ? 'bg-amber-100 text-amber-700' : '' }}">
+                            <span class="badge
+                                {{ $role->name === 'admin' ? 'bg-red-50 text-red-700 ring-1 ring-red-200' : '' }}
+                                {{ $role->name === 'treasurer' ? 'bg-purple-50 text-purple-700 ring-1 ring-purple-200' : '' }}
+                                {{ $role->name === 'member' ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-200' : '' }}
+                                {{ $role->name === 'super_admin' ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-200' : '' }}">
                                 {{ ucfirst(str_replace('_', ' ', $role->name)) }}
                             </span>
                         @endforeach
                         @if($user->roles->isEmpty())
-                            <span class="text-slate-400 text-xs italic">No role</span>
+                            <span class="text-gray-400 text-xs italic">No role</span>
                         @endif
                     </td>
-                    <td class="table-td">
-                        <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full
-                            {{ ($user->status ?? 'active') === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500' }}">
-                            <i class="fas fa-circle text-[7px]"></i>
+                    <td class="td hidden sm:table-cell">
+                        <span class="badge {{ ($user->status ?? 'active') === 'active' ? 'badge-active' : 'badge-inactive' }}">
                             {{ ucfirst($user->status ?? 'active') }}
                         </span>
                     </td>
-                    <td class="table-td text-slate-500 text-xs">{{ $user->created_at->format('d M Y') }}</td>
-                    <td class="table-td text-right">
-                        <a href="{{ route('admin.users.show', $user) }}" class="btn-sm-secondary">View</a>
+                    <td class="td hidden lg:table-cell text-gray-500 text-xs">{{ $user->created_at->format('d M Y') }}</td>
+                    <td class="td text-right">
+                        <a href="{{ route('admin.users.show', $user) }}" class="btn btn-sm btn-secondary">View</a>
                     </td>
                 </tr>
                 @empty
-                <tr>
-                    <td colspan="6" class="table-td text-center text-slate-400 py-10">No users found.</td>
-                </tr>
+                <tr><td colspan="6" class="table-empty">No users found.</td></tr>
                 @endforelse
             </tbody>
         </table>
+        @if($users->hasPages())
+        <div class="px-5 py-4 border-t border-gray-100">{{ $users->withQueryString()->links() }}</div>
+        @endif
     </div>
-
-    <div>{{ $users->withQueryString()->links() }}</div>
 </div>
 @endsection

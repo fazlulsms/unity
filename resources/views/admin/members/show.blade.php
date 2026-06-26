@@ -13,7 +13,6 @@
     <div class="card">
         <div class="card-body">
             <div class="flex flex-col sm:flex-row items-start gap-5">
-                {{-- Photo --}}
                 <img src="{{ $member->user->photo_url }}"
                      class="w-24 h-24 rounded-xl object-cover border border-gray-200 shrink-0" alt="">
                 <div class="flex-1 min-w-0">
@@ -30,13 +29,12 @@
                         <p class="text-xs text-amber-500 mt-0.5"><i class="fas fa-exclamation-circle"></i> Email not verified</p>
                     @endif
                 </div>
-                {{-- Action buttons --}}
                 <div class="flex flex-wrap gap-2 shrink-0">
                     <a href="{{ route('admin.members.edit', $member) }}" class="btn btn-sm btn-secondary">
-                        <i class="fas fa-pen"></i> Edit Profile
+                        <i class="fas fa-pen"></i> Edit
                     </a>
                     <a href="{{ route('admin.members.profile-pdf', $member) }}" class="btn btn-sm btn-secondary" target="_blank">
-                        <i class="fas fa-file-pdf"></i> Profile PDF
+                        <i class="fas fa-file-pdf"></i> PDF
                     </a>
                     <a href="{{ route('admin.members.statement', $member) }}" class="btn btn-sm btn-secondary">
                         <i class="fas fa-file-alt"></i> Statement
@@ -120,7 +118,6 @@
         </div>
     </div>
 
-    {{-- Nominee Information --}}
     @if($member->user->nominee_name || $member->user->nominee_contact)
     <div class="card">
         <div class="card-header"><p class="font-semibold text-gray-800 text-sm">Nominee Information</p></div>
@@ -133,6 +130,39 @@
                 <p class="text-xs text-gray-400 font-medium">Nominee Contact</p>
                 <p class="text-sm text-gray-800 mt-0.5">{{ $member->user->nominee_contact ?: '—' }}</p>
             </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Email Actions --}}
+    @if(!str_ends_with($member->user->email ?? '', '@unity.local') && $member->user->email)
+    <div class="card">
+        <div class="card-header">
+            <p class="font-semibold text-gray-800 text-sm"><i class="fas fa-envelope text-gray-400 mr-1.5"></i> Email Actions</p>
+            <span class="text-xs text-gray-400">{{ $member->user->email }}</span>
+        </div>
+        <div class="card-body flex flex-wrap gap-3">
+            <form method="POST" action="{{ route('admin.email.member.access', $member) }}">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-secondary"
+                        onclick="return confirm('Send login access link to {{ addslashes($member->user->name) }}?')">
+                    <i class="fas fa-key"></i> Send Login Access
+                </button>
+            </form>
+            <form method="POST" action="{{ route('admin.email.member.welcome', $member) }}">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-secondary"
+                        onclick="return confirm('Resend welcome email to {{ addslashes($member->user->name) }}?')">
+                    <i class="fas fa-star"></i> Resend Welcome Email
+                </button>
+            </form>
+            <form method="POST" action="{{ route('admin.email.member.reminder', $member) }}" class="flex gap-2 items-center flex-wrap">
+                @csrf
+                <input type="text" name="admin_message" placeholder="Optional message…" class="form-input text-xs w-48">
+                <button type="submit" class="btn btn-sm btn-secondary">
+                    <i class="fas fa-bell"></i> Send Payment Reminder
+                </button>
+            </form>
         </div>
     </div>
     @endif
@@ -166,10 +196,20 @@
                     <td class="td hidden md:table-cell text-gray-500 text-xs">{{ $sub->payment_date->format('d M Y') }}</td>
                     <td class="td text-right">
                         @if($sub->receipt)
-                        <a href="{{ route('member.receipts.download', $sub->receipt) }}"
-                           class="btn btn-sm btn-ghost text-xs" target="_blank">
-                            <i class="fas fa-download"></i>
-                        </a>
+                        <div class="flex items-center justify-end gap-1">
+                            <a href="{{ route('member.receipts.download', $sub->receipt) }}"
+                               class="btn btn-xs btn-ghost" target="_blank" title="Download receipt">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            @if(!str_ends_with($member->user->email ?? '', '@unity.local') && $member->user->email)
+                            <form method="POST" action="{{ route('admin.email.receipt.resend', $sub->receipt) }}">
+                                @csrf
+                                <button type="submit" class="btn btn-xs btn-ghost text-blue-500" title="Email receipt">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                            </form>
+                            @endif
+                        </div>
                         @else
                         <span class="text-gray-300 text-xs">—</span>
                         @endif
@@ -184,6 +224,9 @@
         <div class="px-5 py-4 border-t border-gray-100">{{ $submissions->links() }}</div>
         @endif
     </div>
+
+    {{-- Email history --}}
+    @include('partials.email-log', ['emailLogs' => $emailLogs])
 
     {{-- Linked Application --}}
     @if($member->application)

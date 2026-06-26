@@ -6,9 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Mail\ApplicationSubmitted;
 use App\Mail\ApplicationSubmittedAdmin;
 use App\Models\MembershipApplication;
-use App\Models\User;
+use App\Support\MailHelper;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 
 class MembershipApplicationController extends Controller
 {
@@ -50,17 +49,18 @@ class MembershipApplicationController extends Controller
 
         $application = MembershipApplication::create($data);
 
-        // Email to applicant
-        if ($application->email) {
-            try {
-                Mail::to($application->email)->send(new ApplicationSubmitted($application));
-            } catch (\Exception $e) {
-                logger()->error('Application submitted email (applicant) failed: ' . $e->getMessage());
-            }
+        if (MailHelper::validEmail($application->email)) {
+            MailHelper::send(
+                $application->email, $application->full_name,
+                new ApplicationSubmitted($application),
+                $application
+            );
         }
 
-        // Email to all admins and treasurers
-        $this->notifyAdmins($application);
+        MailHelper::sendToAdmins(
+            fn() => new ApplicationSubmittedAdmin($application),
+            $application
+        );
 
         return redirect()->route('apply.success')
             ->with('success', 'Your membership application has been submitted successfully. We will review it and contact you soon.');
@@ -69,21 +69,5 @@ class MembershipApplicationController extends Controller
     public function success()
     {
         return view('public.apply-success');
-    }
-
-    private function notifyAdmins(MembershipApplication $application): void
-    {
-        $admins = User::role(['admin', 'treasurer'])
-            ->whereNotNull('email')
-            ->where('email', 'not like', '%@unity.local')
-            ->get();
-
-        foreach ($admins as $admin) {
-            try {
-                Mail::to($admin->email)->send(new ApplicationSubmittedAdmin($application));
-            } catch (\Exception $e) {
-                logger()->error("Admin notification email failed for {$admin->email}: " . $e->getMessage());
-            }
-        }
     }
 }

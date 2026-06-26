@@ -2,7 +2,6 @@
 
 namespace App\Mail;
 
-use App\Models\Member;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -10,23 +9,22 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class WelcomeMember extends Mailable
+class MemberAccessEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public function __construct(
         public User $user,
-        public Member $member,
         public string $setupUrl,
     ) {}
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Welcome to Unity Circle – Your Membership is Approved!');
+        return new Envelope(subject: 'Unity Circle – Your Login Access Link');
     }
 
     public function content(): Content
     {
-        return new Content(view: 'emails.welcome-member');
+        return new Content(view: 'emails.member-access');
     }
 }

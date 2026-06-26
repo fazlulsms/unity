@@ -2,13 +2,13 @@
 @section('email-content')
 
 <h2 style="margin:0 0 6px;color:#0f172a;font-size:22px;font-weight:700;">Welcome to Unity Circle!</h2>
-<p style="margin:0 0 28px;color:#64748b;font-size:14px;">Your membership has been approved.</p>
+<p style="margin:0 0 28px;color:#64748b;font-size:14px;">Your membership application has been approved.</p>
 
 <p style="margin:0 0 16px;color:#334155;font-size:15px;">Dear <strong>{{ $user->name }}</strong>,</p>
 
 <p style="margin:0 0 20px;color:#475569;font-size:14px;line-height:1.7;">
     Congratulations! Your application to join <strong>Unity Circle</strong> has been reviewed and approved.
-    Your member account is now active and you can log in to the member portal below.
+    Please use the button below to set up your password and activate your member account.
 </p>
 
 {{-- Member info card --}}
@@ -25,12 +25,6 @@
             <td style="color:#0f172a;font-size:13px;padding:4px 0;">{{ $user->email }}</td>
         </tr>
         <tr>
-            <td style="color:#64748b;font-size:13px;padding:4px 0;">Temporary Password</td>
-            <td style="padding:4px 0;">
-                <span style="background:#fef2f2;color:#dc2626;font-size:14px;font-weight:700;font-family:monospace;padding:2px 8px;border-radius:4px;border:1px solid #fecaca;">{{ $password }}</span>
-            </td>
-        </tr>
-        <tr>
             <td style="color:#64748b;font-size:13px;padding:4px 0;">Monthly Contribution</td>
             <td style="color:#0f172a;font-size:13px;font-weight:600;padding:4px 0;">৳{{ number_format($member->monthly_fee_amount, 0) }}</td>
         </tr>
@@ -45,7 +39,10 @@
 {{-- Security notice --}}
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fef3c7;border-radius:8px;border:1px solid #fde68a;margin-bottom:24px;">
 <tr><td style="padding:14px 18px;">
-    <p style="margin:0;color:#92400e;font-size:13px;line-height:1.6;"><strong>Security Notice:</strong> Please log in and change your temporary password immediately. Never share your password with anyone.</p>
+    <p style="margin:0;color:#92400e;font-size:13px;line-height:1.6;">
+        <strong>This link expires in 24 hours.</strong> Click the button below to set your password.
+        If the link expires, use <em>Forgot Password</em> on the login page to get a new one.
+    </p>
 </td></tr>
 </table>
 
@@ -53,7 +50,9 @@
 <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
 <tr>
     <td style="background:#2563eb;border-radius:8px;text-align:center;">
-        <a href="{{ url('/login') }}" style="display:inline-block;padding:12px 32px;color:white;text-decoration:none;font-size:14px;font-weight:700;">Log In to Member Portal →</a>
+        <a href="{{ $setupUrl }}" style="display:inline-block;padding:13px 36px;color:white;text-decoration:none;font-size:15px;font-weight:700;">
+            Set Up My Account →
+        </a>
     </td>
 </tr>
 </table>

@@ -37,8 +37,14 @@ class MemberController extends Controller
         $member->load('user', 'application');
         $submissions  = $member->feeSubmissions()->with('receipt')->latest()->paginate(12);
         $lastPayment  = $member->approvedFeeSubmissions()->latest('payment_date')->first();
+        $emailLogs    = \App\Models\EmailLog::where(function ($q) use ($member) {
+            $q->where('to_email', $member->user->email)
+              ->orWhere(function ($q2) use ($member) {
+                  $q2->where('loggable_type', Member::class)->where('loggable_id', $member->id);
+              });
+        })->latest()->get();
 
-        return view('admin.members.show', compact('member', 'submissions', 'lastPayment'));
+        return view('admin.members.show', compact('member', 'submissions', 'lastPayment', 'emailLogs'));
     }
 
     public function edit(Member $member)

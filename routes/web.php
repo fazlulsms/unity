@@ -109,6 +109,13 @@ Route::middleware(['auth', 'verified', 'role:admin|treasurer'])->prefix('admin')
     // Meeting Minutes
     Route::resource('meeting-minutes', Admin\MeetingMinuteController::class);
 
+    // Email actions (manual sends)
+    Route::post('/email/application/{application}/confirmation', [Admin\EmailController::class, 'sendApplicationConfirmation'])->name('email.application.confirmation');
+    Route::post('/email/member/{member}/welcome', [Admin\EmailController::class, 'sendMemberWelcome'])->name('email.member.welcome');
+    Route::post('/email/member/{member}/access', [Admin\EmailController::class, 'sendLoginAccess'])->name('email.member.access');
+    Route::post('/email/member/{member}/reminder', [Admin\EmailController::class, 'sendPaymentReminder'])->name('email.member.reminder');
+    Route::post('/email/receipt/{receipt}/resend', [Admin\EmailController::class, 'resendReceipt'])->name('email.receipt.resend');
+
     // Users
     Route::get('/users', [Admin\UserController::class, 'index'])->name('users.index');
     Route::get('/users/{user}', [Admin\UserController::class, 'show'])->name('users.show');
