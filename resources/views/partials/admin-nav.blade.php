@@ -72,6 +72,14 @@
     <span>Meeting Minutes</span>
 </a>
 
+{{-- System --}}
+<p class="sidebar-section">System</p>
+<a href="{{ route('admin.users.index') }}"
+   class="sidebar-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+    <i class="fas fa-user-shield w-4 text-center"></i>
+    <span>User Management</span>
+</a>
+
 {{-- Reports --}}
 <p class="sidebar-section">Reports</p>
 <a href="{{ route('admin.reports.index') }}"

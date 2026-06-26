@@ -14,6 +14,11 @@
     <i class="fas fa-money-bill-wave w-4 text-center"></i>
     <span>My Payments</span>
 </a>
+<a href="{{ route('member.notices') }}"
+   class="sidebar-link {{ request()->routeIs('member.notices') ? 'active' : '' }}">
+    <i class="fas fa-bell w-4 text-center"></i>
+    <span>Notices</span>
+</a>
 <a href="{{ route('member.transparency') }}"
    class="sidebar-link {{ request()->routeIs('member.transparency') ? 'active' : '' }}">
     <i class="fas fa-chart-pie w-4 text-center"></i>

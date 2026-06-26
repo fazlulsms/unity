@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\PaymentApprovedAdmin;
+use App\Mail\PaymentRejected;
 use App\Models\AuditLog;
 use App\Models\Member;
 use App\Models\MonthlyFeeSubmission;
 use App\Models\Receipt;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -84,6 +87,19 @@ class PaymentApprovalController extends Controller
                     logger()->error('Receipt email failed: ' . $e->getMessage());
                 }
             }
+
+            // Notify admins and treasurers
+            $admins = User::role(['admin', 'treasurer'])
+                ->whereNotNull('email')
+                ->where('email', 'not like', '%@unity.local')
+                ->get();
+            foreach ($admins as $admin) {
+                try {
+                    Mail::to($admin->email)->send(new PaymentApprovedAdmin($receipt));
+                } catch (\Exception $e) {
+                    logger()->error("Payment approved admin email failed for {$admin->email}: " . $e->getMessage());
+                }
+            }
         });
 
         return redirect()->route('admin.payments.index')
@@ -107,6 +123,15 @@ class PaymentApprovalController extends Controller
         ]);
 
         AuditLog::record('payment_rejected', $submission, [], [], "Rejected payment for " . $submission->member->user->name);
+
+        $memberUser = $submission->member->user;
+        if ($memberUser->email && !str_ends_with($memberUser->email, '@unity.local')) {
+            try {
+                Mail::to($memberUser->email)->send(new PaymentRejected($submission));
+            } catch (\Exception $e) {
+                logger()->error('Payment rejected email failed: ' . $e->getMessage());
+            }
+        }
 
         return redirect()->route('admin.payments.index')
             ->with('success', 'Payment rejected.');

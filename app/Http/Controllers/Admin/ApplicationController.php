@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ApplicationApprovedAdmin;
+use App\Mail\ApplicationStatusChanged;
 use App\Models\AuditLog;
 use App\Models\Member;
 use App\Models\MembershipApplication;
@@ -117,6 +119,15 @@ class ApplicationController extends Controller
             'internal_notes' => trim(($application->internal_notes ?? '') . ($note ?? '')),
         ]);
         AuditLog::record('application_more_info', $application, [], [], "More info requested: {$application->full_name}");
+
+        if ($application->email) {
+            try {
+                Mail::to($application->email)->send(new ApplicationStatusChanged($application, 'more_info_required', $request->note));
+            } catch (\Exception $e) {
+                logger()->error('More info email failed: ' . $e->getMessage());
+            }
+        }
+
         return back()->with('success', 'Marked as More Information Required.');
     }
 
@@ -127,6 +138,15 @@ class ApplicationController extends Controller
         }
         $application->update(['status' => 'photo_required', 'reviewed_by' => auth()->id(), 'reviewed_at' => now()]);
         AuditLog::record('application_photo_required', $application, [], [], "Photo requested: {$application->full_name}");
+
+        if ($application->email) {
+            try {
+                Mail::to($application->email)->send(new ApplicationStatusChanged($application, 'photo_required'));
+            } catch (\Exception $e) {
+                logger()->error('Photo required email failed: ' . $e->getMessage());
+            }
+        }
+
         return back()->with('success', 'Marked as Photo Required.');
     }
 
@@ -158,18 +178,19 @@ class ApplicationController extends Controller
             $password = Str::random(10);
 
             $user = User::create([
-                'name'              => $application->full_name,
-                'email'             => $application->email ?? Str::slug($application->full_name) . '@unity.local',
-                'password'          => Hash::make($password),
-                'email_verified_at' => now(),
-                'phone'             => $application->phone,
-                'photo'             => $application->photo,
-                'address'           => $application->address,
-                'date_of_birth'     => $application->date_of_birth,
-                'profession'        => $application->profession,
-                'emergency_contact' => $application->emergency_contact,
-                'nominee_name'      => $application->nominee_name,
-                'nominee_contact'   => $application->nominee_contact,
+                'name'                 => $application->full_name,
+                'email'                => $application->email ?? Str::slug($application->full_name) . '@unity.local',
+                'password'             => Hash::make($password),
+                'email_verified_at'    => now(),
+                'must_change_password' => true,
+                'phone'                => $application->phone,
+                'photo'                => $application->photo,
+                'address'              => $application->address,
+                'date_of_birth'        => $application->date_of_birth,
+                'profession'           => $application->profession,
+                'emergency_contact'    => $application->emergency_contact,
+                'nominee_name'         => $application->nominee_name,
+                'nominee_contact'      => $application->nominee_contact,
             ]);
 
             Role::firstOrCreate(['name' => 'member', 'guard_name' => 'web']);
@@ -204,6 +225,20 @@ class ApplicationController extends Controller
                     logger()->error('Welcome email failed: ' . $e->getMessage());
                 }
             }
+
+            // Notify admins and treasurers
+            $approvedBy = auth()->user()->name;
+            $admins = User::role(['admin', 'treasurer'])
+                ->whereNotNull('email')
+                ->where('email', 'not like', '%@unity.local')
+                ->get();
+            foreach ($admins as $admin) {
+                try {
+                    Mail::to($admin->email)->send(new ApplicationApprovedAdmin($member, $approvedBy));
+                } catch (\Exception $e) {
+                    logger()->error("Approval admin email failed for {$admin->email}: " . $e->getMessage());
+                }
+            }
         });
 
         return redirect()->route('admin.applications.index')
@@ -226,6 +261,14 @@ class ApplicationController extends Controller
         ]);
 
         AuditLog::record('application_rejected', $application, [], [], "Rejected: {$application->full_name}");
+
+        if ($application->email) {
+            try {
+                Mail::to($application->email)->send(new ApplicationStatusChanged($application, 'rejected', $request->rejection_reason));
+            } catch (\Exception $e) {
+                logger()->error('Rejection email failed: ' . $e->getMessage());
+            }
+        }
 
         return redirect()->route('admin.applications.index')
             ->with('success', 'Application rejected.');

@@ -17,6 +17,12 @@ Route::get('/apply', [PublicCtrl\MembershipApplicationController::class, 'create
 Route::post('/apply', [PublicCtrl\MembershipApplicationController::class, 'store'])->name('apply.store');
 Route::get('/apply/success', [PublicCtrl\MembershipApplicationController::class, 'success'])->name('apply.success');
 
+// ─── Force Password Change ───────────────────────────────────────────────────
+Route::middleware('auth')->group(function () {
+    Route::get('/change-password', [\App\Http\Controllers\Auth\ChangePasswordController::class, 'show'])->name('password.change');
+    Route::post('/change-password', [\App\Http\Controllers\Auth\ChangePasswordController::class, 'update'])->name('password.change.update');
+});
+
 // ─── Auth redirect ───────────────────────────────────────────────────────────
 Route::get('/dashboard', function () {
     $user = auth()->user();
@@ -29,6 +35,7 @@ Route::get('/dashboard', function () {
 // ─── Member Portal ───────────────────────────────────────────────────────────
 Route::middleware(['auth', 'verified', 'role:member|admin|treasurer'])->prefix('member')->name('member.')->group(function () {
     Route::get('/dashboard', [Member\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/notices', [Member\DashboardController::class, 'notices'])->name('notices');
     Route::get('/transparency', [Member\DashboardController::class, 'transparency'])->name('transparency');
 
     Route::get('/profile', [Member\ProfileController::class, 'edit'])->name('profile');
@@ -101,6 +108,13 @@ Route::middleware(['auth', 'verified', 'role:admin|treasurer'])->prefix('admin')
 
     // Meeting Minutes
     Route::resource('meeting-minutes', Admin\MeetingMinuteController::class);
+
+    // Users
+    Route::get('/users', [Admin\UserController::class, 'index'])->name('users.index');
+    Route::get('/users/{user}', [Admin\UserController::class, 'show'])->name('users.show');
+    Route::patch('/users/{user}/role', [Admin\UserController::class, 'updateRole'])->name('users.role');
+    Route::patch('/users/{user}/toggle-status', [Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
+    Route::post('/users/{user}/reset-password', [Admin\UserController::class, 'resetPassword'])->name('users.reset-password');
 
     // Reports
     Route::get('/reports', [Admin\ReportController::class, 'index'])->name('reports.index');

@@ -34,6 +34,12 @@ class DashboardController extends Controller
         ));
     }
 
+    public function notices()
+    {
+        $notices = Notice::published()->latest('published_at')->paginate(15);
+        return view('member.notices', compact('notices'));
+    }
+
     public function transparency()
     {
         $stats = $this->getTransparencyStats();

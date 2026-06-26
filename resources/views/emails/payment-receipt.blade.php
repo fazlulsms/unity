@@ -1,70 +1,69 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<style>
-    body { font-family: Arial, sans-serif; font-size: 14px; color: #333; background: #f4f4f4; margin: 0; padding: 20px; }
-    .card { background: #fff; max-width: 560px; margin: 0 auto; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-    .header { background: #1a7a4a; color: #fff; padding: 24px 32px; }
-    .header h1 { margin: 0; font-size: 20px; }
-    .header p { margin: 4px 0 0; font-size: 12px; opacity: .8; }
-    .body { padding: 28px 32px; }
-    .body p { line-height: 1.6; margin: 0 0 12px; }
-    .receipt-box { background: #f0faf4; border: 1px solid #a7d7b7; border-radius: 6px; padding: 18px 22px; margin: 18px 0; }
-    .receipt-box table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .receipt-box td { padding: 5px 0; }
-    .receipt-box td:first-child { color: #555; width: 50%; }
-    .receipt-box td:last-child { font-weight: bold; text-align: right; }
-    .amount { font-size: 22px; font-weight: bold; color: #1a7a4a; text-align: center; margin: 12px 0; }
-    .footer { background: #f9f9f9; border-top: 1px solid #eee; padding: 14px 32px; font-size: 11px; color: #888; }
-</style>
-</head>
-<body>
-<div class="card">
-    <div class="header">
-        <h1>Payment Receipt</h1>
-        <p>{{ $receipt->receipt_number }}</p>
-    </div>
-    <div class="body">
-        <p>Dear <strong>{{ $receipt->member_name }}</strong>,</p>
-        <p>Your monthly fee payment has been approved. Please find your receipt details below.</p>
+@extends('emails.layout')
+@section('email-content')
 
-        <div class="amount">৳{{ number_format($receipt->amount, 2) }}</div>
+<h2 style="margin:0 0 6px;color:#0f172a;font-size:22px;font-weight:700;">Payment Approved</h2>
+<p style="margin:0 0 28px;color:#64748b;font-size:14px;">Your monthly fee payment has been approved.</p>
 
-        <div class="receipt-box">
-            <table>
-                <tr>
-                    <td>Receipt Number</td>
-                    <td>{{ $receipt->receipt_number }}</td>
-                </tr>
-                <tr>
-                    <td>For Period</td>
-                    <td>{{ date('F', mktime(0,0,0,$receipt->month,1)) }} {{ $receipt->year }}</td>
-                </tr>
-                <tr>
-                    <td>Payment Method</td>
-                    <td>{{ ucfirst($receipt->payment_method) }}</td>
-                </tr>
-                <tr>
-                    <td>Payment Date</td>
-                    <td>{{ $receipt->payment_date ? \Carbon\Carbon::parse($receipt->payment_date)->format('d F Y') : '—' }}</td>
-                </tr>
-                <tr>
-                    <td>Approved Date</td>
-                    <td>{{ $receipt->approved_date ? \Carbon\Carbon::parse($receipt->approved_date)->format('d F Y') : '—' }}</td>
-                </tr>
-                <tr>
-                    <td>Authorized By</td>
-                    <td>{{ $receipt->authorized_by }}</td>
-                </tr>
-            </table>
-        </div>
+<p style="margin:0 0 16px;color:#334155;font-size:15px;">Dear <strong>{{ $receipt->member_name }}</strong>,</p>
 
-        <p>You can also download this receipt from the member portal under <em>Payment History</em>.</p>
-        <p>Thank you for your timely payment!</p>
-        <p>Regards,<br><strong>Unity Circle Treasurer</strong></p>
-    </div>
-    <div class="footer">This is an automated email. Please do not reply directly to this message.</div>
-</div>
-</body>
-</html>
+<p style="margin:0 0 20px;color:#475569;font-size:14px;line-height:1.7;">
+    Great news! Your monthly contribution for <strong>{{ date('F', mktime(0,0,0,$receipt->month,1)) }} {{ $receipt->year }}</strong>
+    has been approved. Your receipt is below.
+</p>
+
+{{-- Amount highlight --}}
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;">
+<tr>
+    <td align="center" style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:20px;">
+        <p style="margin:0 0 4px;color:#16a34a;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;">Amount Paid</p>
+        <p style="margin:0;color:#15803d;font-size:32px;font-weight:800;">৳{{ number_format($receipt->amount, 2) }}</p>
+    </td>
+</tr>
+</table>
+
+{{-- Receipt details --}}
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:24px;">
+<tr><td style="padding:20px 24px;">
+    <p style="margin:0 0 14px;color:#475569;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;">Receipt Details</p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td style="color:#64748b;font-size:13px;padding:5px 0;border-bottom:1px solid #f1f5f9;width:50%;">Receipt Number</td>
+            <td style="color:#0f172a;font-size:13px;font-weight:700;font-family:monospace;padding:5px 0;border-bottom:1px solid #f1f5f9;text-align:right;">{{ $receipt->receipt_number }}</td>
+        </tr>
+        <tr>
+            <td style="color:#64748b;font-size:13px;padding:5px 0;border-bottom:1px solid #f1f5f9;">For Period</td>
+            <td style="color:#0f172a;font-size:13px;font-weight:600;padding:5px 0;border-bottom:1px solid #f1f5f9;text-align:right;">{{ date('F', mktime(0,0,0,$receipt->month,1)) }} {{ $receipt->year }}</td>
+        </tr>
+        <tr>
+            <td style="color:#64748b;font-size:13px;padding:5px 0;border-bottom:1px solid #f1f5f9;">Payment Method</td>
+            <td style="color:#0f172a;font-size:13px;padding:5px 0;border-bottom:1px solid #f1f5f9;text-align:right;">{{ ucfirst($receipt->payment_method) }}</td>
+        </tr>
+        <tr>
+            <td style="color:#64748b;font-size:13px;padding:5px 0;border-bottom:1px solid #f1f5f9;">Payment Date</td>
+            <td style="color:#0f172a;font-size:13px;padding:5px 0;border-bottom:1px solid #f1f5f9;text-align:right;">{{ $receipt->payment_date ? \Carbon\Carbon::parse($receipt->payment_date)->format('d F Y') : '—' }}</td>
+        </tr>
+        <tr>
+            <td style="color:#64748b;font-size:13px;padding:5px 0;border-bottom:1px solid #f1f5f9;">Approved Date</td>
+            <td style="color:#0f172a;font-size:13px;padding:5px 0;border-bottom:1px solid #f1f5f9;text-align:right;">{{ $receipt->approved_date ? \Carbon\Carbon::parse($receipt->approved_date)->format('d F Y') : '—' }}</td>
+        </tr>
+        <tr>
+            <td style="color:#64748b;font-size:13px;padding:5px 0;">Authorized By</td>
+            <td style="color:#0f172a;font-size:13px;padding:5px 0;text-align:right;">{{ $receipt->authorized_by }}</td>
+        </tr>
+    </table>
+</td></tr>
+</table>
+
+{{-- CTA button --}}
+<table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+<tr>
+    <td style="background:#16a34a;border-radius:8px;">
+        <a href="{{ url('/member/fees') }}" style="display:inline-block;padding:11px 28px;color:white;text-decoration:none;font-size:14px;font-weight:700;">View My Payment History →</a>
+    </td>
+</tr>
+</table>
+
+<p style="margin:0;color:#94a3b8;font-size:13px;">You can download this receipt from the member portal under <em>My Payments</em>.</p>
+<p style="margin:12px 0 0;color:#94a3b8;font-size:12px;font-style:italic;">This is a computer-generated receipt.</p>
+
+@endsection

@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ApplicationSubmitted;
+use App\Mail\ApplicationSubmittedAdmin;
 use App\Models\MembershipApplication;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
 
 class MembershipApplicationController extends Controller
 {
@@ -45,7 +48,19 @@ class MembershipApplicationController extends Controller
 
         $data['is_existing_member'] = $request->boolean('is_existing_member');
 
-        MembershipApplication::create($data);
+        $application = MembershipApplication::create($data);
+
+        // Email to applicant
+        if ($application->email) {
+            try {
+                Mail::to($application->email)->send(new ApplicationSubmitted($application));
+            } catch (\Exception $e) {
+                logger()->error('Application submitted email (applicant) failed: ' . $e->getMessage());
+            }
+        }
+
+        // Email to all admins and treasurers
+        $this->notifyAdmins($application);
 
         return redirect()->route('apply.success')
             ->with('success', 'Your membership application has been submitted successfully. We will review it and contact you soon.');
@@ -54,5 +69,21 @@ class MembershipApplicationController extends Controller
     public function success()
     {
         return view('public.apply-success');
+    }
+
+    private function notifyAdmins(MembershipApplication $application): void
+    {
+        $admins = User::role(['admin', 'treasurer'])
+            ->whereNotNull('email')
+            ->where('email', 'not like', '%@unity.local')
+            ->get();
+
+        foreach ($admins as $admin) {
+            try {
+                Mail::to($admin->email)->send(new ApplicationSubmittedAdmin($application));
+            } catch (\Exception $e) {
+                logger()->error("Admin notification email failed for {$admin->email}: " . $e->getMessage());
+            }
+        }
     }
 }
