@@ -39,18 +39,6 @@
                     <a href="{{ route('admin.members.statement', $member) }}" class="btn btn-sm btn-secondary">
                         <i class="fas fa-file-alt"></i> Statement
                     </a>
-                    <a href="{{ route('admin.members.history', $member) }}" class="btn btn-sm btn-secondary">
-                        <i class="fas fa-history"></i> Update History
-                        @if($historyCount > 0)
-                        <span class="ml-1 bg-gray-200 text-gray-700 text-xs font-bold px-1.5 py-0.5 rounded-full">{{ $historyCount }}</span>
-                        @endif
-                    </a>
-                    <a href="{{ route('admin.members.emails', $member) }}" class="btn btn-sm btn-secondary">
-                        <i class="fas fa-envelope"></i> Email History
-                        @if($emailCount > 0)
-                        <span class="ml-1 bg-gray-200 text-gray-700 text-xs font-bold px-1.5 py-0.5 rounded-full">{{ $emailCount }}</span>
-                        @endif
-                    </a>
                     <a href="{{ route('admin.members.additional-info.show', $member) }}" class="btn btn-sm btn-secondary">
                         <i class="fas fa-address-card"></i> Additional Info
                     </a>
@@ -259,8 +247,24 @@
     </div>
     @endif
 
-    <a href="{{ route('admin.members.index') }}" class="inline-block text-sm text-gray-500 hover:text-gray-700">
-        ← Back to members
-    </a>
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <a href="{{ route('admin.members.index') }}" class="text-sm text-gray-500 hover:text-gray-700">
+            ← Back to members
+        </a>
+        <div class="flex gap-2">
+            <a href="{{ route('admin.members.history', $member) }}" class="btn btn-sm btn-ghost text-gray-500">
+                <i class="fas fa-history text-xs"></i> Update History
+                @if($historyCount > 0)
+                <span class="ml-1 bg-gray-100 text-gray-600 text-xs font-bold px-1.5 py-0.5 rounded-full">{{ $historyCount }}</span>
+                @endif
+            </a>
+            <a href="{{ route('admin.members.emails', $member) }}" class="btn btn-sm btn-ghost text-gray-500">
+                <i class="fas fa-envelope text-xs"></i> Email History
+                @if($emailCount > 0)
+                <span class="ml-1 bg-gray-100 text-gray-600 text-xs font-bold px-1.5 py-0.5 rounded-full">{{ $emailCount }}</span>
+                @endif
+            </a>
+        </div>
+    </div>
 </div>
 @endsection
