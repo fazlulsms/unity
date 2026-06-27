@@ -11,11 +11,13 @@ class FdrController extends Controller
 {
     public function index()
     {
-        $fdrs     = FdrRecord::with('creator')->latest()->paginate(20);
+        $fdrs           = FdrRecord::with('creator', 'linkedIncome')->latest()->paginate(20);
         $totalPrincipal = FdrRecord::whereIn('status', ['active', 'matured'])->sum('principal_amount');
         $totalInterest  = FdrRecord::sum('interest_received');
+        $activeFdrCount = FdrRecord::where('status', 'active')->count();
+        $closedFdrCount = FdrRecord::whereIn('status', ['matured', 'closed', 'renewed'])->count();
 
-        return view('admin.fdr.index', compact('fdrs', 'totalPrincipal', 'totalInterest'));
+        return view('admin.fdr.index', compact('fdrs', 'totalPrincipal', 'totalInterest', 'activeFdrCount', 'closedFdrCount'));
     }
 
     public function create()
@@ -25,6 +27,7 @@ class FdrController extends Controller
 
     public function show(FdrRecord $fdr)
     {
+        $fdr->load('linkedIncome', 'creator');
         return view('admin.fdr.show', compact('fdr'));
     }
 
@@ -47,10 +50,10 @@ class FdrController extends Controller
         ]);
 
         if ($request->hasFile('attachment')) {
-            $file = $request->file('attachment');
+            $file     = $request->file('attachment');
             $filename = $file->hashName();
-            $base = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
-            $dir = $base . '/uploads/fdr';
+            $base     = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
+            $dir      = $base . '/uploads/fdr';
             @mkdir($dir, 0755, true);
             $file->move($dir, $filename);
             $data['attachment'] = 'fdr/' . $filename;
@@ -61,6 +64,10 @@ class FdrController extends Controller
 
         $fdr = FdrRecord::create($data);
         AuditLog::record('fdr_created', $fdr, [], $fdr->toArray());
+
+        if ($fdr->interest_received) {
+            $fdr->syncLinkedIncome(auth()->id());
+        }
 
         return redirect()->route('admin.fdr.index')
             ->with('success', 'FDR record created.');
@@ -96,9 +103,9 @@ class FdrController extends Controller
                 $oldPath = $base . '/uploads/' . $fdr->attachment;
                 if (file_exists($oldPath)) @unlink($oldPath);
             }
-            $file = $request->file('attachment');
+            $file     = $request->file('attachment');
             $filename = $file->hashName();
-            $dir = $base . '/uploads/fdr';
+            $dir      = $base . '/uploads/fdr';
             @mkdir($dir, 0755, true);
             $file->move($dir, $filename);
             $data['attachment'] = 'fdr/' . $filename;
@@ -110,6 +117,56 @@ class FdrController extends Controller
         $fdr->update($data);
         AuditLog::record('fdr_updated', $fdr, $old, $fdr->fresh()->toArray());
 
+        $fdr->refresh();
+        $fdr->syncLinkedIncome(auth()->id());
+
         return redirect()->route('admin.fdr.index')->with('success', 'FDR record updated.');
+    }
+
+    public function closeForm(FdrRecord $fdr)
+    {
+        if ($fdr->isClosed()) {
+            return redirect()->route('admin.fdr.show', $fdr)
+                ->with('error', 'This FDR is already closed or matured.');
+        }
+        return view('admin.fdr.close', compact('fdr'));
+    }
+
+    public function close(Request $request, FdrRecord $fdr)
+    {
+        if ($fdr->isClosed()) {
+            return redirect()->route('admin.fdr.show', $fdr)
+                ->with('error', 'This FDR is already closed or matured.');
+        }
+
+        $data = $request->validate([
+            'closure_date'           => 'required|date',
+            'interest_received'      => 'required|numeric|min:0',
+            'actual_maturity_amount' => 'nullable|numeric|min:0',
+            'status'                 => 'required|in:matured,closed,renewed',
+            'closure_attachment'     => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:5120',
+            'notes'                  => 'nullable|string|max:1000',
+        ]);
+
+        if ($request->hasFile('closure_attachment')) {
+            $file     = $request->file('closure_attachment');
+            $filename = $file->hashName();
+            $base     = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
+            $dir      = $base . '/uploads/fdr';
+            @mkdir($dir, 0755, true);
+            $file->move($dir, $filename);
+            $data['closure_attachment'] = 'fdr/' . $filename;
+        }
+
+        $data['updated_by'] = auth()->id();
+        $old = $fdr->toArray();
+        $fdr->update($data);
+        AuditLog::record('fdr_closed', $fdr, $old, $fdr->fresh()->toArray());
+
+        $fdr->refresh();
+        $fdr->syncLinkedIncome(auth()->id());
+
+        return redirect()->route('admin.fdr.show', $fdr)
+            ->with('success', 'FDR closed and interest posted to Other Income.');
     }
 }

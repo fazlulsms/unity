@@ -34,9 +34,21 @@ class DashboardController extends Controller
         $totalCollection = MonthlyFeeSubmission::where('status', 'approved')->sum('amount');
         $totalExpenses   = Expense::where('status', 'active')->sum('amount');
         $totalIncome     = Income::where('status', 'active')->sum('amount');
-        $totalFdrPrincipal = FdrRecord::whereIn('status', ['active', 'matured'])->sum('principal_amount');
-        $totalFdrInterest  = FdrRecord::sum('interest_received');
-        $netFund         = $totalCollection + $totalIncome - $totalExpenses;
+        $totalFdrPrincipal     = FdrRecord::whereIn('status', ['active', 'matured'])->sum('principal_amount');
+        $totalFdrInterest      = FdrRecord::sum('interest_received');
+        $activeFdrCount        = FdrRecord::where('status', 'active')->count();
+        $closedFdrCount        = FdrRecord::whereIn('status', ['matured', 'closed', 'renewed'])->count();
+        $thisMonthFdrInterest  = Income::where('income_type', 'fdr_interest')
+            ->where('status', 'active')
+            ->whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear)
+            ->sum('amount');
+        $upcomingFdrMaturities = FdrRecord::where('status', 'active')
+            ->where('maturity_date', '<=', now()->addDays(90))
+            ->orderBy('maturity_date')
+            ->limit(5)
+            ->get();
+        $netFund = $totalCollection + $totalIncome - $totalExpenses;
 
         $pendingPaymentsList = MonthlyFeeSubmission::with('member.user')
             ->where('status', 'pending')
@@ -105,6 +117,7 @@ class DashboardController extends Controller
             'expectedCollection', 'collectedThisMonth', 'dueThisMonth',
             'totalCollection', 'totalExpenses', 'totalIncome',
             'totalFdrPrincipal', 'totalFdrInterest', 'netFund',
+            'activeFdrCount', 'closedFdrCount', 'thisMonthFdrInterest', 'upcomingFdrMaturities',
             'pendingPaymentsList', 'recentApplications',
             'memberBirthdays', 'familyBirthdays', 'upcomingAnniversaries'
         ));

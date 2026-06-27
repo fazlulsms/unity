@@ -29,6 +29,11 @@
                     <a href="{{ route('admin.fdr.edit', $fdr) }}" class="btn btn-sm btn-secondary">
                         <i class="fas fa-pen"></i> Edit
                     </a>
+                    @if($fdr->isActive())
+                    <a href="{{ route('admin.fdr.close', $fdr) }}" class="btn btn-sm btn-warning">
+                        <i class="fas fa-lock"></i> Close / Mature
+                    </a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -83,6 +88,72 @@
                 <p class="text-xs text-gray-400 font-medium">Notes</p>
                 <p class="text-sm text-gray-800 mt-0.5">{{ $fdr->notes }}</p>
             </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- Closure details (if closed/matured) --}}
+    @if($fdr->isClosed() && $fdr->closure_date)
+    <div class="card border-l-4 border-emerald-400">
+        <div class="card-header"><p class="font-semibold text-gray-800 text-sm"><i class="fas fa-check-circle text-emerald-500 mr-1.5"></i> Closure / Maturity Record</p></div>
+        <div class="card-body grid sm:grid-cols-2 gap-x-8 gap-y-4">
+            <div>
+                <p class="text-xs text-gray-400 font-medium">Closure Date</p>
+                <p class="text-sm text-gray-800 mt-0.5">{{ $fdr->closure_date->format('d F Y') }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-400 font-medium">Interest Received</p>
+                <p class="text-sm font-semibold text-emerald-700 mt-0.5">৳ {{ number_format($fdr->interest_received, 2) }}</p>
+            </div>
+            @if($fdr->actual_maturity_amount)
+            <div>
+                <p class="text-xs text-gray-400 font-medium">Actual Maturity Amount</p>
+                <p class="text-sm text-gray-800 mt-0.5">৳ {{ number_format($fdr->actual_maturity_amount, 2) }}</p>
+            </div>
+            @endif
+            @if($fdr->closure_attachment_url)
+            <div>
+                <p class="text-xs text-gray-400 font-medium">Closure Proof</p>
+                <a href="{{ $fdr->closure_attachment_url }}" target="_blank" class="btn btn-sm btn-secondary mt-1">
+                    <i class="fas fa-file"></i> View Document
+                </a>
+            </div>
+            @endif
+        </div>
+    </div>
+    @endif
+
+    {{-- Linked income record --}}
+    <div class="card">
+        <div class="card-header">
+            <p class="font-semibold text-gray-800 text-sm"><i class="fas fa-link text-gray-400 mr-1.5"></i> Linked Income Entry</p>
+        </div>
+        <div class="card-body">
+            @if($fdr->linkedIncome && $fdr->linkedIncome->status === 'active')
+            <div class="flex items-center justify-between gap-4">
+                <div>
+                    <p class="text-sm font-semibold text-gray-800">৳ {{ number_format($fdr->linkedIncome->amount, 2) }}</p>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ $fdr->linkedIncome->source }}</p>
+                    <p class="text-xs text-gray-400">Date: {{ $fdr->linkedIncome->date->format('d M Y') }}
+                        @if($fdr->linkedIncome->source_module === 'fdr')
+                        · <span class="text-violet-600 font-medium">Auto-posted by FDR module</span>
+                        @else
+                        · <span class="text-blue-600 font-medium">Manually linked</span>
+                        @endif
+                    </p>
+                </div>
+                <a href="{{ route('admin.income.edit', $fdr->linkedIncome) }}" class="btn btn-sm btn-secondary shrink-0">
+                    <i class="fas fa-pen"></i> Edit
+                </a>
+            </div>
+            @elseif($fdr->linkedIncome && $fdr->linkedIncome->status === 'voided')
+            <p class="text-sm text-gray-400">Linked income entry was voided.</p>
+            @else
+            <p class="text-sm text-gray-400">No income entry linked yet.
+                @if($fdr->interest_received)
+                Interest of ৳{{ number_format($fdr->interest_received, 2) }} is recorded on FDR but not yet posted to Other Income.
+                @endif
+            </p>
             @endif
         </div>
     </div>

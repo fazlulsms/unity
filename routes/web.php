@@ -104,6 +104,8 @@ Route::middleware(['auth', 'verified', 'role:admin|treasurer'])->prefix('admin')
 
     // FDR
     Route::resource('fdr', Admin\FdrController::class)->except(['destroy']);
+    Route::get('/fdr/{fdr}/close', [Admin\FdrController::class, 'closeForm'])->name('fdr.close');
+    Route::post('/fdr/{fdr}/close', [Admin\FdrController::class, 'close'])->name('fdr.close.store');
 
     // Notices
     Route::resource('notices', Admin\NoticeController::class);

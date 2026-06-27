@@ -8,8 +8,7 @@
 
     {{-- ── Top Member Stats ──────────────────────────────── --}}
     <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        {{-- Total Members --}}
-        <div class="card p-5 flex items-center gap-4">
+        <a href="{{ route('admin.members.index') }}" class="card p-5 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer">
             <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
                 <i class="fas fa-users text-blue-600 text-lg"></i>
             </div>
@@ -17,9 +16,8 @@
                 <p class="text-2xl font-bold text-gray-900">{{ $totalMembers }}</p>
                 <p class="text-xs text-gray-500 font-medium mt-0.5">Total Members</p>
             </div>
-        </div>
-        {{-- Active Members --}}
-        <div class="card p-5 flex items-center gap-4">
+        </a>
+        <a href="{{ route('admin.members.index') }}" class="card p-5 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer">
             <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
                 <i class="fas fa-user-check text-emerald-600 text-lg"></i>
             </div>
@@ -27,9 +25,8 @@
                 <p class="text-2xl font-bold text-gray-900">{{ $activeMembers }}</p>
                 <p class="text-xs text-gray-500 font-medium mt-0.5">Active Members</p>
             </div>
-        </div>
-        {{-- Pending Applications --}}
-        <div class="card p-5 flex items-center gap-4">
+        </a>
+        <a href="{{ route('admin.applications.index') }}" class="card p-5 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer">
             <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
                 <i class="fas fa-file-circle-question text-amber-600 text-lg"></i>
             </div>
@@ -37,9 +34,8 @@
                 <p class="text-2xl font-bold text-gray-900">{{ $pendingApplications }}</p>
                 <p class="text-xs text-gray-500 font-medium mt-0.5">Pending Applications</p>
             </div>
-        </div>
-        {{-- Pending Payments --}}
-        <div class="card p-5 flex items-center gap-4">
+        </a>
+        <a href="{{ route('admin.payments.index') }}" class="card p-5 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer">
             <div class="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center shrink-0">
                 <i class="fas fa-clock text-violet-600 text-lg"></i>
             </div>
@@ -47,7 +43,7 @@
                 <p class="text-2xl font-bold text-gray-900">{{ $pendingPayments }}</p>
                 <p class="text-xs text-gray-500 font-medium mt-0.5">Pending Payments</p>
             </div>
-        </div>
+        </a>
     </div>
 
     {{-- ── This Month ─────────────────────────────────────── --}}
@@ -56,12 +52,12 @@
             {{ now()->format('F Y') }} Overview
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="card p-5 border-t-4 border-blue-500">
+            <a href="{{ route('admin.collections.index') }}" class="card p-5 border-t-4 border-blue-500 hover:shadow-md transition-shadow cursor-pointer">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Expected</p>
                 <p class="text-2xl font-bold text-gray-900">৳{{ number_format($expectedCollection, 0) }}</p>
                 <p class="text-xs text-gray-400 mt-1">From {{ $activeMembers }} active members</p>
-            </div>
-            <div class="card p-5 border-t-4 border-emerald-500">
+            </a>
+            <a href="{{ route('admin.collections.index') }}" class="card p-5 border-t-4 border-emerald-500 hover:shadow-md transition-shadow cursor-pointer">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Collected</p>
                 <p class="text-2xl font-bold text-emerald-600">৳{{ number_format($collectedThisMonth, 0) }}</p>
                 @if($expectedCollection > 0)
@@ -73,12 +69,12 @@
                     <p class="text-xs text-gray-400 mt-1">{{ round($collectedThisMonth / $expectedCollection * 100) }}% collected</p>
                 </div>
                 @endif
-            </div>
-            <div class="card p-5 border-t-4 border-red-400">
+            </a>
+            <a href="{{ route('admin.collections.due') }}" class="card p-5 border-t-4 border-red-400 hover:shadow-md transition-shadow cursor-pointer">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Still Due</p>
                 <p class="text-2xl font-bold text-red-600">৳{{ number_format($dueThisMonth, 0) }}</p>
                 <p class="text-xs text-gray-400 mt-1">Outstanding this month</p>
-            </div>
+            </a>
         </div>
     </div>
 
@@ -86,7 +82,7 @@
     <div>
         <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Fund Summary (All Time)</h2>
         <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-            <div class="card p-4">
+            <a href="{{ route('admin.collections.index') }}" class="card p-4 hover:shadow-md transition-shadow cursor-pointer">
                 <div class="flex items-center justify-between mb-3">
                     <p class="text-xs font-medium text-gray-400">Collections</p>
                     <span class="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center">
@@ -94,8 +90,8 @@
                     </span>
                 </div>
                 <p class="text-lg font-bold text-blue-700">৳{{ number_format($totalCollection, 0) }}</p>
-            </div>
-            <div class="card p-4">
+            </a>
+            <a href="{{ route('admin.expenses.index') }}" class="card p-4 hover:shadow-md transition-shadow cursor-pointer">
                 <div class="flex items-center justify-between mb-3">
                     <p class="text-xs font-medium text-gray-400">Expenses</p>
                     <span class="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center">
@@ -103,8 +99,8 @@
                     </span>
                 </div>
                 <p class="text-lg font-bold text-red-600">৳{{ number_format($totalExpenses, 0) }}</p>
-            </div>
-            <div class="card p-4">
+            </a>
+            <a href="{{ route('admin.income.index') }}" class="card p-4 hover:shadow-md transition-shadow cursor-pointer">
                 <div class="flex items-center justify-between mb-3">
                     <p class="text-xs font-medium text-gray-400">Other Income</p>
                     <span class="w-7 h-7 rounded-lg bg-teal-100 flex items-center justify-center">
@@ -112,8 +108,8 @@
                     </span>
                 </div>
                 <p class="text-lg font-bold text-teal-700">৳{{ number_format($totalIncome, 0) }}</p>
-            </div>
-            <div class="card p-4">
+            </a>
+            <a href="{{ route('admin.fdr.index') }}" class="card p-4 hover:shadow-md transition-shadow cursor-pointer">
                 <div class="flex items-center justify-between mb-3">
                     <p class="text-xs font-medium text-gray-400">FDR Principal</p>
                     <span class="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center">
@@ -121,7 +117,7 @@
                     </span>
                 </div>
                 <p class="text-lg font-bold text-violet-700">৳{{ number_format($totalFdrPrincipal, 0) }}</p>
-            </div>
+            </a>
             <div class="card p-4 bg-gradient-to-br from-emerald-500 to-emerald-600 border-0 shadow-lg shadow-emerald-200">
                 <div class="flex items-center justify-between mb-3">
                     <p class="text-xs font-medium text-emerald-100">Net Fund</p>
@@ -210,6 +206,95 @@
             </div>
         </div>
 
+    </div>
+
+    {{-- ── FDR Summary ────────────────────────────────────── --}}
+    <div>
+        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">FDR Records</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+            <a href="{{ route('admin.fdr.index') }}" class="card p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-medium text-gray-400">Total Principal</p>
+                    <span class="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center">
+                        <i class="fas fa-building-columns text-violet-600 text-xs"></i>
+                    </span>
+                </div>
+                <p class="text-lg font-bold text-violet-700">৳{{ number_format($totalFdrPrincipal, 0) }}</p>
+            </a>
+            <a href="{{ route('admin.fdr.index') }}" class="card p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-medium text-gray-400">Total Interest</p>
+                    <span class="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center">
+                        <i class="fas fa-percent text-emerald-600 text-xs"></i>
+                    </span>
+                </div>
+                <p class="text-lg font-bold text-emerald-700">৳{{ number_format($totalFdrInterest, 0) }}</p>
+            </a>
+            <a href="{{ route('admin.fdr.index') }}" class="card p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-medium text-gray-400">Active FDRs</p>
+                    <span class="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <i class="fas fa-circle-check text-blue-600 text-xs"></i>
+                    </span>
+                </div>
+                <p class="text-lg font-bold text-blue-700">{{ $activeFdrCount }}</p>
+            </a>
+            <a href="{{ route('admin.fdr.index') }}" class="card p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-medium text-gray-400">Matured / Closed</p>
+                    <span class="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center">
+                        <i class="fas fa-lock text-gray-500 text-xs"></i>
+                    </span>
+                </div>
+                <p class="text-lg font-bold text-gray-700">{{ $closedFdrCount }}</p>
+            </a>
+            <a href="{{ route('admin.income.index', ['type' => 'fdr_interest']) }}" class="card p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-medium text-gray-400">This Month Interest</p>
+                    <span class="w-7 h-7 rounded-lg bg-teal-100 flex items-center justify-center">
+                        <i class="fas fa-calendar-check text-teal-600 text-xs"></i>
+                    </span>
+                </div>
+                <p class="text-lg font-bold text-teal-700">৳{{ number_format($thisMonthFdrInterest, 0) }}</p>
+            </a>
+            <a href="{{ route('admin.fdr.index') }}" class="card p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-medium text-gray-400">Upcoming Maturity</p>
+                    <span class="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
+                        <i class="fas fa-hourglass-half text-amber-600 text-xs"></i>
+                    </span>
+                </div>
+                <p class="text-lg font-bold text-amber-700">{{ $upcomingFdrMaturities->count() }}</p>
+                <p class="text-xs text-gray-400 mt-1">next 90 days</p>
+            </a>
+        </div>
+
+        {{-- Upcoming maturity list --}}
+        @if($upcomingFdrMaturities->isNotEmpty())
+        <div class="mt-4 card">
+            <div class="card-header">
+                <p class="font-semibold text-gray-800 text-sm"><i class="fas fa-hourglass-half text-amber-500 mr-1.5"></i> FDRs Maturing Within 90 Days</p>
+                <a href="{{ route('admin.fdr.index') }}" class="btn-ghost btn-sm text-blue-600">View all</a>
+            </div>
+            <div class="divide-y divide-gray-50">
+                @foreach($upcomingFdrMaturities as $fdr)
+                <div class="flex items-center justify-between px-5 py-3 gap-4">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900">{{ $fdr->bank_name }} — FDR #{{ $fdr->fdr_number }}</p>
+                        <p class="text-xs text-gray-400">Principal: ৳{{ number_format($fdr->principal_amount, 0) }} · {{ $fdr->interest_rate }}% p.a.</p>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <p class="text-sm font-semibold {{ $fdr->days_to_maturity <= 30 ? 'text-red-600' : 'text-amber-600' }}">
+                            {{ $fdr->maturity_date->format('d M Y') }}
+                        </p>
+                        <p class="text-xs text-gray-400">{{ $fdr->days_to_maturity }} days</p>
+                    </div>
+                    <a href="{{ route('admin.fdr.show', $fdr) }}" class="btn btn-sm btn-secondary shrink-0">View</a>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
     </div>
 
     {{-- ── Upcoming Events ───────────────────────────────── --}}

@@ -9,6 +9,7 @@ class Income extends Model
     protected $table = 'income';
 
     protected $fillable = [
+        'fdr_id', 'source_module',
         'date', 'income_type', 'source', 'amount', 'reference',
         'attachment', 'notes', 'status', 'created_by', 'updated_by',
     ];
@@ -24,6 +25,16 @@ class Income extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function fdr()
+    {
+        return $this->belongsTo(FdrRecord::class, 'fdr_id');
+    }
+
+    public function isFdrLinked(): bool
+    {
+        return $this->source_module === 'fdr' || $this->fdr_id !== null;
     }
 
     public function isActive(): bool
