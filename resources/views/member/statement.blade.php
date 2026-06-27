@@ -83,6 +83,18 @@
                 @empty
                 <tr><td colspan="8" class="table-empty">No contribution records for {{ $year }}.</td></tr>
                 @endforelse
+                @if($totals['joining_contribution'] > 0)
+                <tr class="bg-amber-50/60 border-b border-amber-100">
+                    <td class="td font-semibold text-amber-800">Opening / Joining Contribution</td>
+                    <td class="td text-right font-semibold text-amber-700">৳ {{ number_format($totals['joining_contribution'], 0) }}</td>
+                    <td class="td text-right text-gray-400 text-sm">—</td>
+                    <td class="td text-right hidden sm:table-cell font-semibold text-amber-700">৳ {{ number_format($totals['joining_contribution'], 0) }}</td>
+                    <td class="td hidden md:table-cell text-gray-400 text-xs">—</td>
+                    <td class="td hidden md:table-cell text-gray-400 text-xs">—</td>
+                    <td class="td hidden lg:table-cell text-gray-400 text-xs">—</td>
+                    <td class="td"><span class="px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-700">Opening</span></td>
+                </tr>
+                @endif
             </tbody>
             @if(count($rows) > 0)
             <tfoot class="bg-gray-50 border-t-2 border-gray-200">

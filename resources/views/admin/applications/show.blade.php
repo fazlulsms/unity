@@ -210,6 +210,12 @@
                                    required class="form-input">
                         </div>
                         <div>
+                            <label class="form-label">Opening / Joining Contribution (৳)</label>
+                            <input type="number" name="joining_contribution" value="0"
+                                   min="0" step="0.01" class="form-input">
+                            <p class="text-xs text-gray-400 mt-1">One-time backdated or opening balance. Leave 0 if not applicable.</p>
+                        </div>
+                        <div>
                             <label class="form-label">Remarks (optional)</label>
                             <textarea name="review_remarks" rows="2" class="form-textarea"></textarea>
                         </div>

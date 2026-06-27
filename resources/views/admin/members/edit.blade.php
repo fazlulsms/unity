@@ -123,6 +123,13 @@
                                    value="{{ old('join_date', $member->join_date->format('Y-m-d')) }}"
                                    required class="form-input">
                         </div>
+                        <div class="sm:col-span-2">
+                            <label class="form-label">Joining / Opening Contribution (৳)</label>
+                            <input type="number" name="joining_contribution"
+                                   value="{{ old('joining_contribution', $member->joining_contribution ?? 0) }}"
+                                   min="0" step="0.01" class="form-input">
+                            <p class="text-xs text-gray-400 mt-1">One-time admin-set amount for backdated or opening balance. Leave 0 if not applicable. This is added to the member's total payable once.</p>
+                        </div>
                         <div>
                             <label class="form-label">Status <span class="form-required">*</span></label>
                             <select name="status" required class="form-input">

@@ -111,10 +111,11 @@ class MemberController extends Controller
     public function update(Request $request, Member $member)
     {
         $memberData = $request->validate([
-            'monthly_fee_amount' => 'required|numeric|min:0',
-            'join_date'          => 'required|date',
-            'status'             => 'required|in:active,inactive,suspended',
-            'notes'              => 'nullable|string|max:1000',
+            'monthly_fee_amount'   => 'required|numeric|min:0',
+            'joining_contribution' => 'nullable|numeric|min:0',
+            'join_date'            => 'required|date',
+            'status'               => 'required|in:active,inactive,suspended',
+            'notes'                => 'nullable|string|max:1000',
         ]);
 
         $userData = $request->validate([
@@ -153,10 +154,11 @@ class MemberController extends Controller
             'nominee_name'       => 'Nominee Name',
             'nominee_contact'    => 'Nominee Contact',
             'photo'              => 'Photo',
-            'monthly_fee_amount' => 'Monthly Fee',
-            'join_date'          => 'Join Date',
-            'status'             => 'Status',
-            'notes'              => 'Notes',
+            'monthly_fee_amount'   => 'Monthly Fee',
+            'joining_contribution' => 'Joining Contribution',
+            'join_date'            => 'Join Date',
+            'status'               => 'Status',
+            'notes'                => 'Notes',
         ];
 
         $user    = $member->user;
@@ -243,6 +245,7 @@ class MemberController extends Controller
         $startMonth = ($joinDate->year === $year) ? $joinDate->month : 1;
         $endMonth   = ($year >= now()->year) ? now()->month : 12;
 
+        $joiningContribution = (float) ($member->joining_contribution ?? 0);
         $rows = [];
 
         if ($joinDate->year <= $year) {
@@ -274,10 +277,16 @@ class MemberController extends Controller
             }
         }
 
+        // Joining contribution appears as extra expected in the join year only
+        $joinYearContribution = ($joinDate->year === $year) ? $joiningContribution : 0.0;
+        $monthlyExpected      = (float) collect($rows)->sum('expected');
+        $monthlyPaid          = (float) collect($rows)->sum('paid');
+
         $totals = [
-            'expected' => collect($rows)->sum('expected'),
-            'paid'     => collect($rows)->sum('paid'),
-            'due'      => collect($rows)->sum('due'),
+            'joining_contribution' => $joinYearContribution,
+            'expected'            => $monthlyExpected + $joinYearContribution,
+            'paid'                => $monthlyPaid,
+            'due'                 => max(0.0, $monthlyExpected + $joinYearContribution - $monthlyPaid),
         ];
 
         $availableYears = range(max($joinDate->year, 2020), now()->year);

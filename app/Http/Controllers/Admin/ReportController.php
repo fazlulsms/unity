@@ -62,10 +62,9 @@ class ReportController extends Controller
             ->where('status', 'active')
             ->get()
             ->map(function ($member) {
-                $months  = $member->join_date->diffInMonths(now()) + 1;
-                $expected = $months * $member->monthly_fee_amount;
-                $paid    = $member->feeSubmissions->sum('amount');
-                $due     = max(0, $expected - $paid);
+                $paid     = (float) $member->feeSubmissions->sum('amount');
+                $expected = $member->total_payable;
+                $due      = max(0.0, $expected - $paid);
                 return array_merge($member->toArray(), [
                     'user_name'      => $member->user->name,
                     'expected_total' => $expected,

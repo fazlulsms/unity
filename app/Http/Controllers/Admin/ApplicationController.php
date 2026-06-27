@@ -184,9 +184,10 @@ class ApplicationController extends Controller
         }
 
         $request->validate([
-            'review_remarks'     => 'nullable|string|max:500',
-            'monthly_fee_amount' => 'required|numeric|min:0',
-            'join_date'          => 'required|date',
+            'review_remarks'       => 'nullable|string|max:500',
+            'monthly_fee_amount'   => 'required|numeric|min:0',
+            'join_date'            => 'required|date',
+            'joining_contribution' => 'nullable|numeric|min:0',
         ]);
 
         DB::transaction(function () use ($application, $request) {
@@ -210,13 +211,14 @@ class ApplicationController extends Controller
 
             $memberCount = Member::count() + 1;
             $member = Member::create([
-                'user_id'            => $user->id,
-                'application_id'     => $application->id,
-                'member_number'      => 'UC-' . str_pad($memberCount, 4, '0', STR_PAD_LEFT),
-                'join_date'          => $request->join_date,
-                'monthly_fee_amount' => $request->monthly_fee_amount,
-                'status'             => 'active',
-                'created_by'         => auth()->id(),
+                'user_id'              => $user->id,
+                'application_id'       => $application->id,
+                'member_number'        => 'UC-' . str_pad($memberCount, 4, '0', STR_PAD_LEFT),
+                'join_date'            => $request->join_date,
+                'monthly_fee_amount'   => $request->monthly_fee_amount,
+                'joining_contribution' => $request->joining_contribution ?? 0,
+                'status'               => 'active',
+                'created_by'           => auth()->id(),
             ]);
 
             $application->update([

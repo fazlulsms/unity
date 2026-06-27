@@ -9,14 +9,15 @@ class Member extends Model
 {
     protected $fillable = [
         'user_id', 'application_id', 'member_number', 'join_date',
-        'monthly_fee_amount', 'status', 'notes', 'created_by', 'updated_by',
+        'monthly_fee_amount', 'joining_contribution', 'status', 'notes', 'created_by', 'updated_by',
     ];
 
     protected function casts(): array
     {
         return [
-            'join_date' => 'date',
-            'monthly_fee_amount' => 'decimal:2',
+            'join_date'            => 'date',
+            'monthly_fee_amount'   => 'decimal:2',
+            'joining_contribution' => 'decimal:2',
         ];
     }
 
@@ -80,15 +81,40 @@ class Member extends Model
         return $this->status === 'active';
     }
 
-    public function getTotalPaidAttribute(): float
+    /**
+     * Number of calendar months for which a fee is payable,
+     * from the join month up to and including the current month.
+     * Uses calendar arithmetic (year/month only) — never day-precise.
+     */
+    public function getPayableMonthsAttribute(): int
     {
-        return $this->approvedFeeSubmissions()->sum('amount');
+        return max(1,
+            (now()->year  - $this->join_date->year)  * 12
+            + (now()->month - $this->join_date->month) + 1
+        );
     }
 
+    /** Monthly fee payable across all months (no joining contribution). */
+    public function getMonthlyTotalPayableAttribute(): float
+    {
+        return $this->payable_months * (float) $this->monthly_fee_amount;
+    }
+
+    /** Grand total payable = joining contribution + all monthly fees. */
+    public function getTotalPayableAttribute(): float
+    {
+        return $this->monthly_total_payable + (float) ($this->joining_contribution ?? 0);
+    }
+
+    /** Sum of all admin-approved payments. */
+    public function getTotalPaidAttribute(): float
+    {
+        return (float) $this->approvedFeeSubmissions()->sum('amount');
+    }
+
+    /** Outstanding due = total payable − total paid (never negative). */
     public function getTotalDueAttribute(): float
     {
-        $monthsSinceJoin = $this->join_date->diffInMonths(now()) + 1;
-        $expected = $monthsSinceJoin * $this->monthly_fee_amount;
-        return max(0, $expected - $this->total_paid);
+        return max(0.0, $this->total_payable - $this->total_paid);
     }
 }

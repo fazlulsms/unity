@@ -225,9 +225,8 @@ class CollectionController extends Controller
             ->orderBy('id')
             ->get()
             ->map(function ($member) {
-                $months   = $member->join_date->diffInMonths(now()) + 1;
-                $expected = $months * (float) $member->monthly_fee_amount;
                 $paid     = (float) $member->feeSubmissions->sum('amount');
+                $expected = $member->total_payable;
                 $due      = max(0.0, $expected - $paid);
 
                 $lastPayment = $member->feeSubmissions->sortByDesc('payment_date')->first();

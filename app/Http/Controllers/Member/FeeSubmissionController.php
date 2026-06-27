@@ -159,10 +159,16 @@ class FeeSubmissionController extends Controller
             }
         }
 
+        $joiningContribution  = (float) ($member->joining_contribution ?? 0);
+        $joinYearContribution = ($joinDate->year === $year) ? $joiningContribution : 0.0;
+        $monthlyExpected      = (float) collect($rows)->sum('expected');
+        $monthlyPaid          = (float) collect($rows)->sum('paid');
+
         $totals = [
-            'expected' => collect($rows)->sum('expected'),
-            'paid'     => collect($rows)->sum('paid'),
-            'due'      => collect($rows)->sum('due'),
+            'joining_contribution' => $joinYearContribution,
+            'expected'            => $monthlyExpected + $joinYearContribution,
+            'paid'                => $monthlyPaid,
+            'due'                 => max(0.0, $monthlyExpected + $joinYearContribution - $monthlyPaid),
         ];
 
         $availableYears = range(max($joinDate->year, 2020), now()->year);
