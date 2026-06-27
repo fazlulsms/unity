@@ -81,7 +81,7 @@
         <div class="member-grid" style="margin-top:8px;">
             <div class="member-col">
                 <div class="label">Monthly Contribution</div>
-                <div class="value">৳ {{ number_format($member->monthly_fee_amount, 2) }}</div>
+                <div class="value">Tk. {{ number_format($member->monthly_fee_amount, 2) }}</div>
             </div>
             <div class="member-col">
                 <div class="label">Statement Generated</div>
@@ -93,15 +93,15 @@
     <div class="summary">
         <div class="sum-cell">
             <div class="sum-label">Expected</div>
-            <div class="sum-value gray">৳ {{ number_format($totals['expected'], 2) }}</div>
+            <div class="sum-value gray">Tk. {{ number_format($totals['expected'], 2) }}</div>
         </div>
         <div class="sum-cell">
             <div class="sum-label">Total Paid</div>
-            <div class="sum-value green">৳ {{ number_format($totals['paid'], 2) }}</div>
+            <div class="sum-value green">Tk. {{ number_format($totals['paid'], 2) }}</div>
         </div>
         <div class="sum-cell">
             <div class="sum-label">Outstanding</div>
-            <div class="sum-value {{ $totals['due'] > 0 ? 'red' : 'gray' }}">৳ {{ number_format($totals['due'], 2) }}</div>
+            <div class="sum-value {{ $totals['due'] > 0 ? 'red' : 'gray' }}">Tk. {{ number_format($totals['due'], 2) }}</div>
         </div>
     </div>
 
@@ -122,9 +122,9 @@
             @forelse($rows as $row)
             <tr>
                 <td>{{ $row['month_name'] }} {{ $year }}</td>
-                <td class="right">৳ {{ number_format($row['expected'], 2) }}</td>
-                <td class="right">{{ $row['paid'] > 0 ? '৳ ' . number_format($row['paid'], 2) : '—' }}</td>
-                <td class="right">{{ $row['due'] > 0 ? '৳ ' . number_format($row['due'], 2) : '—' }}</td>
+                <td class="right">Tk. {{ number_format($row['expected'], 2) }}</td>
+                <td class="right">{{ $row['paid'] > 0 ? 'Tk. ' . number_format($row['paid'], 2) : '—' }}</td>
+                <td class="right">{{ $row['due'] > 0 ? 'Tk. ' . number_format($row['due'], 2) : '—' }}</td>
                 <td>{{ $row['method'] }}</td>
                 <td>{{ $row['payment_date'] }}</td>
                 <td style="font-family: monospace; font-size: 9px;">{{ $row['receipt_number'] }}</td>
@@ -146,9 +146,9 @@
         <tfoot>
             <tr>
                 <td><strong>Total</strong></td>
-                <td class="right">৳ {{ number_format($totals['expected'], 2) }}</td>
-                <td class="right" style="color:#059669;">৳ {{ number_format($totals['paid'], 2) }}</td>
-                <td class="right" style="{{ $totals['due'] > 0 ? 'color:#dc2626;' : 'color:#9ca3af;' }}">৳ {{ number_format($totals['due'], 2) }}</td>
+                <td class="right">Tk. {{ number_format($totals['expected'], 2) }}</td>
+                <td class="right" style="color:#059669;">Tk. {{ number_format($totals['paid'], 2) }}</td>
+                <td class="right" style="{{ $totals['due'] > 0 ? 'color:#dc2626;' : 'color:#9ca3af;' }}">Tk. {{ number_format($totals['due'], 2) }}</td>
                 <td colspan="4"></td>
             </tr>
         </tfoot>
