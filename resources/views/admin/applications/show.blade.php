@@ -38,10 +38,16 @@
                     @endif
                 </div>
                 <div class="flex flex-wrap gap-2 shrink-0">
+                    @if($application->isOpen())
                     <a href="{{ route('admin.applications.edit', $application) }}" class="btn btn-sm btn-secondary">
                         <i class="fas fa-pen"></i> Edit Data
                     </a>
-                    @if($application->email)
+                    @else
+                    <span class="inline-flex items-center gap-1.5 text-xs text-gray-400 border border-gray-200 bg-gray-50 rounded-lg px-3 py-1.5 font-medium">
+                        <i class="fas fa-lock"></i> Locked Record
+                    </span>
+                    @endif
+                    @if($application->email && $application->isOpen())
                     <form method="POST" action="{{ route('admin.email.application.confirmation', $application) }}">
                         @csrf
                         <button type="submit" class="btn btn-sm btn-ghost text-blue-600 hover:bg-blue-50">
@@ -53,6 +59,32 @@
             </div>
         </div>
     </div>
+
+    {{-- Approved lock banner --}}
+    @if($application->isApproved())
+    <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex items-start gap-3 flex-1">
+            <i class="fas fa-lock text-emerald-500 mt-0.5"></i>
+            <div>
+                <p class="text-sm font-semibold text-emerald-800">Approved Record – Locked</p>
+                <p class="text-xs text-emerald-600 mt-0.5">This is the original submitted and approved record. It cannot be edited. To correct member information, use the Member Profile.</p>
+            </div>
+        </div>
+        @if($application->member)
+        <a href="{{ route('admin.members.edit', $application->member) }}" class="btn btn-sm btn-success shrink-0">
+            <i class="fas fa-user-edit"></i> Edit Member Profile
+        </a>
+        @endif
+    </div>
+    @elseif($application->isRejected())
+    <div class="rounded-xl border border-red-200 bg-red-50 px-5 py-4 flex items-start gap-3">
+        <i class="fas fa-lock text-red-400 mt-0.5"></i>
+        <div>
+            <p class="text-sm font-semibold text-red-700">Rejected Record – Locked</p>
+            <p class="text-xs text-red-500 mt-0.5">This application was rejected and is permanently locked.</p>
+        </div>
+    </div>
+    @endif
 
     <div class="flex flex-col xl:flex-row gap-5">
 

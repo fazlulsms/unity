@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Member extends Model
 {
@@ -47,6 +48,11 @@ class Member extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function profileHistories()
+    {
+        return $this->hasMany(MemberProfileHistory::class);
     }
 
     public function isActive(): bool

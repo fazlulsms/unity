@@ -228,6 +228,41 @@
         @endif
     </div>
 
+    {{-- Profile Update History --}}
+    @if($profileHistories->isNotEmpty())
+    <div class="card">
+        <div class="card-header">
+            <p class="font-semibold text-gray-800 text-sm">
+                <i class="fas fa-history text-gray-400 mr-1.5"></i> Profile Update History
+            </p>
+            <span class="text-xs text-gray-400">{{ $profileHistories->count() }} update(s)</span>
+        </div>
+        <div class="divide-y divide-gray-50">
+            @foreach($profileHistories as $history)
+            <div class="px-5 py-3">
+                <div class="flex items-center justify-between mb-2">
+                    <p class="text-xs font-semibold text-gray-700">
+                        <i class="fas fa-user-edit text-gray-400 mr-1"></i>
+                        {{ $history->updater?->name ?? 'System' }}
+                    </p>
+                    <p class="text-xs text-gray-400">{{ $history->created_at->format('d M Y, h:i A') }}</p>
+                </div>
+                <div class="space-y-1.5">
+                    @foreach($history->changes as $label => $change)
+                    <div class="flex items-start gap-2 text-xs flex-wrap">
+                        <span class="text-gray-500 font-semibold min-w-32 shrink-0">{{ $label }}:</span>
+                        <span class="text-red-500 line-through">{{ $change['old'] !== '' ? $change['old'] : '(empty)' }}</span>
+                        <span class="text-gray-300">→</span>
+                        <span class="text-emerald-600 font-medium">{{ $change['new'] !== '' ? $change['new'] : '(cleared)' }}</span>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     {{-- Email history --}}
     @include('partials.email-log', ['emailLogs' => $emailLogs])
 

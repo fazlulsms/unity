@@ -7,6 +7,7 @@ use App\Mail\PaymentReceipt;
 use App\Models\AuditLog;
 use App\Models\EmailLog;
 use App\Models\Member;
+use App\Models\MemberProfileHistory;
 use App\Models\MonthlyFeeSubmission;
 use App\Models\User;
 use App\Support\MailHelper;
@@ -57,8 +58,13 @@ class MemberController extends Controller
             ->flip()
             ->toArray();
 
+        $profileHistories = MemberProfileHistory::with('updater')
+            ->where('member_id', $member->id)
+            ->latest()
+            ->get();
+
         return view('admin.members.show', compact(
-            'member', 'submissions', 'lastPayment', 'emailLogs', 'receiptEmailSentIds'
+            'member', 'submissions', 'lastPayment', 'emailLogs', 'receiptEmailSentIds', 'profileHistories'
         ));
     }
 
@@ -69,28 +75,107 @@ class MemberController extends Controller
 
     public function update(Request $request, Member $member)
     {
-        $data = $request->validate([
+        $memberData = $request->validate([
             'monthly_fee_amount' => 'required|numeric|min:0',
             'join_date'          => 'required|date',
             'status'             => 'required|in:active,inactive,suspended',
             'notes'              => 'nullable|string|max:1000',
         ]);
 
-        $old = $member->toArray();
-        $data['updated_by'] = auth()->id();
-        $member->update($data);
-
-        $userFields = $request->validate([
-            'name'    => 'nullable|string|max:255',
-            'phone'   => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:1000',
+        $userData = $request->validate([
+            'name'              => 'required|string|max:255',
+            'phone'             => 'nullable|string|max:20',
+            'address'           => 'nullable|string|max:1000',
+            'date_of_birth'     => 'nullable|date',
+            'profession'        => 'nullable|string|max:255',
+            'emergency_contact' => 'nullable|string|max:255',
+            'nominee_name'      => 'nullable|string|max:255',
+            'nominee_contact'   => 'nullable|string|max:255',
+            'photo'             => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
-        $member->user->update(array_filter($userFields));
 
-        AuditLog::record('member_updated', $member, $old, $member->fresh()->toArray());
+        // Handle photo upload
+        if ($request->hasFile('photo')) {
+            $file     = $request->file('photo');
+            $filename = $file->hashName();
+            $base     = rtrim($_SERVER['DOCUMENT_ROOT'] ?? public_path(), '/');
+            $dir      = $base . '/uploads/members';
+            @mkdir($dir, 0755, true);
+            $file->move($dir, $filename);
+            $userData['photo'] = 'members/' . $filename;
+        } else {
+            unset($userData['photo']);
+        }
+
+        // Human-readable field labels for history display
+        $fieldLabels = [
+            'name'               => 'Name',
+            'phone'              => 'Phone',
+            'address'            => 'Address',
+            'date_of_birth'      => 'Date of Birth',
+            'profession'         => 'Profession',
+            'emergency_contact'  => 'Emergency Contact',
+            'nominee_name'       => 'Nominee Name',
+            'nominee_contact'    => 'Nominee Contact',
+            'photo'              => 'Photo',
+            'monthly_fee_amount' => 'Monthly Fee',
+            'join_date'          => 'Join Date',
+            'status'             => 'Status',
+            'notes'              => 'Notes',
+        ];
+
+        $user    = $member->user;
+        $changes = [];
+
+        // Detect user field changes
+        foreach ($userData as $field => $newValue) {
+            if ($field === 'photo') continue; // handled separately below
+            $oldRaw = $user->$field;
+            $oldStr = $oldRaw instanceof \Illuminate\Support\Carbon
+                ? $oldRaw->format('Y-m-d')
+                : ($oldRaw ?? '');
+            $newStr = $newValue ?? '';
+            if ($oldStr != $newStr) {
+                $changes[$fieldLabels[$field] ?? $field] = ['old' => $oldStr, 'new' => $newStr];
+            }
+        }
+
+        // Detect member field changes
+        foreach ($memberData as $field => $newValue) {
+            $oldRaw = $member->$field;
+            $oldStr = $oldRaw instanceof \Illuminate\Support\Carbon
+                ? $oldRaw->format('Y-m-d')
+                : ((string) ($oldRaw ?? ''));
+            $newStr = (string) ($newValue ?? '');
+            if ($oldStr != $newStr) {
+                $changes[$fieldLabels[$field] ?? $field] = ['old' => $oldStr, 'new' => $newStr];
+            }
+        }
+
+        // Photo change
+        if (isset($userData['photo'])) {
+            $changes['Photo'] = ['old' => 'Previous photo', 'new' => 'New photo uploaded'];
+        }
+
+        $oldMember = $member->toArray();
+
+        $memberData['updated_by'] = auth()->id();
+        $member->update($memberData);
+        $user->update($userData);
+
+        // Record history if anything changed
+        if (!empty($changes)) {
+            MemberProfileHistory::create([
+                'member_id'  => $member->id,
+                'changes'    => $changes,
+                'updated_by' => auth()->id(),
+            ]);
+        }
+
+        AuditLog::record('member_updated', $member, $oldMember, $member->fresh()->toArray());
 
         return redirect()->route('admin.members.show', $member)
-            ->with('success', 'Member updated.');
+            ->with('success', 'Member profile updated.');
     }
 
     public function deactivate(Member $member)

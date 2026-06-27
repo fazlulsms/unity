@@ -54,11 +54,20 @@ class ApplicationController extends Controller
 
     public function edit(MembershipApplication $application)
     {
+        if (!$application->isOpen()) {
+            return redirect()->route('admin.applications.show', $application)
+                ->with('error', 'This application is ' . $application->statusLabel() . ' — it is permanently locked and cannot be edited.');
+        }
         return view('admin.applications.edit', compact('application'));
     }
 
     public function update(Request $request, MembershipApplication $application)
     {
+        if (!$application->isOpen()) {
+            return redirect()->route('admin.applications.show', $application)
+                ->with('error', 'This application is ' . $application->statusLabel() . ' — it is permanently locked and cannot be edited.');
+        }
+
         $data = $request->validate([
             'full_name'          => 'required|string|max:255',
             'phone'              => 'required|string|max:20',
