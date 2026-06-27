@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\PaymentReceipt;
 use App\Models\AuditLog;
+use App\Models\EmailLog;
 use App\Models\Member;
 use App\Models\MonthlyFeeSubmission;
 use App\Models\Receipt;
+use App\Support\MailHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -48,7 +51,17 @@ class CollectionController extends Controller
     public function show(MonthlyFeeSubmission $collection)
     {
         $collection->load('member.user', 'receipt', 'approver', 'creator');
-        return view('admin.collections.show', compact('collection'));
+
+        $emailLogs = EmailLog::where('loggable_type', MonthlyFeeSubmission::class)
+            ->where('loggable_id', $collection->id)
+            ->latest()->get();
+
+        $receiptEmailSent = $emailLogs
+            ->where('mailable_class', \App\Mail\PaymentReceipt::class)
+            ->where('status', 'sent')
+            ->isNotEmpty();
+
+        return view('admin.collections.show', compact('collection', 'emailLogs', 'receiptEmailSent'));
     }
 
     // ── Add single manual payment ────────────────────────────────────────────
@@ -88,7 +101,10 @@ class CollectionController extends Controller
 
         $member = Member::findOrFail($data['member_id']);
 
-        DB::transaction(function () use ($data, $member) {
+        $receipt    = null;
+        $submission = null;
+
+        DB::transaction(function () use ($data, $member, &$submission, &$receipt) {
             $submission = MonthlyFeeSubmission::create(array_merge($data, [
                 'user_id'          => $member->user_id,
                 'status'           => 'approved',
@@ -98,12 +114,20 @@ class CollectionController extends Controller
                 'created_by'       => auth()->id(),
             ]));
 
-            $this->issueReceipt($submission, $member);
+            $receipt = $this->issueReceipt($submission, $member);
 
             AuditLog::record('manual_payment_added', $submission, [], [],
                 "Manual payment added for {$member->member_number} — "
                 . date('F', mktime(0, 0, 0, $data['month'], 1)) . " {$data['year']}");
         });
+
+        if ($receipt && $submission && MailHelper::validEmail($member->user->email ?? null)) {
+            MailHelper::send(
+                $member->user->email, $member->user->name,
+                new PaymentReceipt($receipt),
+                $submission, auth()->id()
+            );
+        }
 
         return redirect()->route('admin.collections.index')
             ->with('success', 'Payment recorded and receipt generated for ' . $member->user->name . '.');
@@ -138,12 +162,13 @@ class CollectionController extends Controller
         $year    = (int) $request->year;
         $entries = $request->input('entries', []);
         $saved   = 0;
+        $toEmail = [];
 
-        DB::transaction(function () use ($entries, $month, $year, &$saved) {
+        DB::transaction(function () use ($entries, $month, $year, &$saved, &$toEmail) {
             foreach ($entries as $memberId => $row) {
                 if (empty($row['amount']) || (float) $row['amount'] <= 0) continue;
 
-                $member = Member::find($memberId);
+                $member = Member::with('user')->find($memberId);
                 if (!$member) continue;
 
                 $alreadyPaid = MonthlyFeeSubmission::where('member_id', $memberId)
@@ -168,10 +193,22 @@ class CollectionController extends Controller
                     'created_by'            => auth()->id(),
                 ]);
 
-                $this->issueReceipt($submission, $member);
+                $receipt = $this->issueReceipt($submission, $member);
+                $toEmail[] = ['receipt' => $receipt, 'submission' => $submission, 'member' => $member];
                 $saved++;
             }
         });
+
+        // Send receipt emails after transaction completes
+        foreach ($toEmail as $item) {
+            if (MailHelper::validEmail($item['member']->user->email ?? null)) {
+                MailHelper::send(
+                    $item['member']->user->email, $item['member']->user->name,
+                    new PaymentReceipt($item['receipt']),
+                    $item['submission'], auth()->id()
+                );
+            }
+        }
 
         return redirect()->route('admin.collections.bulk', ['month' => $month, 'year' => $year])
             ->with('success', "{$saved} payment(s) recorded for " . date('F', mktime(0, 0, 0, $month, 1)) . " {$year}.");
@@ -214,7 +251,7 @@ class CollectionController extends Controller
 
     // ── Private: issue receipt for a submission ───────────────────────────────
 
-    private function issueReceipt(MonthlyFeeSubmission $submission, Member $member): void
+    private function issueReceipt(MonthlyFeeSubmission $submission, Member $member): Receipt
     {
         $receipt = Receipt::create([
             'receipt_number'            => Receipt::generateReceiptNumber(),
@@ -230,5 +267,7 @@ class CollectionController extends Controller
             'authorized_by'             => auth()->user()->name,
         ]);
         $submission->update(['receipt_id' => $receipt->id]);
+
+        return $receipt;
     }
 }

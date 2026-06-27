@@ -42,7 +42,13 @@ class PaymentApprovalController extends Controller
             ->where('loggable_id', $submission->id)
             ->latest()
             ->get();
-        return view('admin.payments.show', compact('submission', 'emailLogs'));
+
+        $receiptEmailSent = $emailLogs
+            ->where('mailable_class', PaymentReceipt::class)
+            ->where('status', 'sent')
+            ->isNotEmpty();
+
+        return view('admin.payments.show', compact('submission', 'emailLogs', 'receiptEmailSent'));
     }
 
     public function approve(Request $request, MonthlyFeeSubmission $submission)

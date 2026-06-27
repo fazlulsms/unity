@@ -28,12 +28,22 @@
                     </div>
                 </div>
                 {{-- Actions --}}
-                <div class="flex gap-2 shrink-0">
+                <div class="flex gap-2 shrink-0 flex-wrap">
                     @if($collection->receipt)
                     <a href="{{ route('member.receipts.download', $collection->receipt) }}"
                        target="_blank" class="btn btn-sm btn-success">
                         <i class="fas fa-download"></i> Receipt
                     </a>
+                    @if(!str_ends_with($collection->member->user->email ?? '', '@unity.local') && $collection->member->user->email)
+                    <form method="POST" action="{{ route('admin.email.receipt.resend', $collection->receipt) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-secondary {{ $receiptEmailSent ? 'text-blue-600' : '' }}"
+                                onclick="return confirm('{{ $receiptEmailSent ? 'Resend' : 'Send' }} receipt email to {{ addslashes($collection->member->user->name) }}?')">
+                            <i class="fas fa-envelope"></i>
+                            {{ $receiptEmailSent ? 'Resend Receipt Email' : 'Send Receipt Email' }}
+                        </button>
+                    </form>
+                    @endif
                     @endif
                     <a href="{{ route('admin.members.show', $collection->member) }}" class="btn btn-sm btn-secondary">
                         <i class="fas fa-user"></i> Member
@@ -91,15 +101,32 @@
     {{-- Receipt card --}}
     @if($collection->receipt)
     <div class="card">
-        <div class="card-body flex items-center justify-between">
+        <div class="card-body flex items-center justify-between gap-3 flex-wrap">
             <div>
                 <p class="text-xs text-gray-400 font-medium">Receipt Number</p>
                 <p class="text-sm font-bold font-mono text-gray-900 mt-0.5">{{ $collection->receipt->receipt_number }}</p>
+                @if($receiptEmailSent)
+                <p class="text-xs text-emerald-600 mt-1"><i class="fas fa-check-circle"></i> Receipt email sent</p>
+                @else
+                <p class="text-xs text-amber-500 mt-1"><i class="fas fa-clock"></i> Receipt email not yet sent</p>
+                @endif
             </div>
-            <a href="{{ route('member.receipts.download', $collection->receipt) }}"
-               target="_blank" class="btn btn-md btn-secondary">
-                <i class="fas fa-file-alt"></i> Download Receipt
-            </a>
+            <div class="flex gap-2 flex-wrap">
+                <a href="{{ route('member.receipts.download', $collection->receipt) }}"
+                   target="_blank" class="btn btn-md btn-secondary">
+                    <i class="fas fa-file-alt"></i> Download Receipt
+                </a>
+                @if(!str_ends_with($collection->member->user->email ?? '', '@unity.local') && $collection->member->user->email)
+                <form method="POST" action="{{ route('admin.email.receipt.resend', $collection->receipt) }}">
+                    @csrf
+                    <button type="submit" class="btn btn-md btn-secondary text-blue-600"
+                            onclick="return confirm('{{ $receiptEmailSent ? 'Resend' : 'Send' }} receipt email?')">
+                        <i class="fas fa-envelope"></i>
+                        {{ $receiptEmailSent ? 'Resend Receipt Email' : 'Send Receipt Email' }}
+                    </button>
+                </form>
+                @endif
+            </div>
         </div>
     </div>
     @endif
@@ -123,6 +150,9 @@
         </div>
     </div>
     @endif
+
+    {{-- Email history --}}
+    @include('partials.email-log', ['emailLogs' => $emailLogs])
 
     <a href="{{ route('admin.collections.index') }}" class="inline-block text-sm text-gray-500 hover:text-gray-700">
         ← Back to Collections

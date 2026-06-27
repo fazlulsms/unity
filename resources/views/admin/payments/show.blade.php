@@ -95,9 +95,10 @@
                     @if(!str_ends_with($submission->member->user->email ?? '', '@unity.local') && $submission->member->user->email)
                     <form method="POST" action="{{ route('admin.email.receipt.resend', $submission->receipt) }}">
                         @csrf
-                        <button type="submit" class="btn btn-sm btn-secondary text-blue-600"
-                                onclick="return confirm('Resend receipt email?')">
-                            <i class="fas fa-envelope"></i> Email Receipt
+                        <button type="submit" class="btn btn-sm btn-secondary {{ $receiptEmailSent ? 'text-blue-600' : '' }}"
+                                onclick="return confirm('{{ $receiptEmailSent ? 'Resend' : 'Send' }} receipt email?')">
+                            <i class="fas fa-envelope"></i>
+                            {{ $receiptEmailSent ? 'Resend Receipt Email' : 'Send Receipt Email' }}
                         </button>
                     </form>
                     @endif

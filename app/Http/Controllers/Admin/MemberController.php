@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\PaymentReceipt;
 use App\Models\AuditLog;
+use App\Models\EmailLog;
 use App\Models\Member;
 use App\Models\MonthlyFeeSubmission;
 use App\Models\User;
+use App\Support\MailHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -37,14 +40,26 @@ class MemberController extends Controller
         $member->load('user', 'application');
         $submissions  = $member->feeSubmissions()->with('receipt')->latest()->paginate(12);
         $lastPayment  = $member->approvedFeeSubmissions()->latest('payment_date')->first();
-        $emailLogs    = \App\Models\EmailLog::where(function ($q) use ($member) {
+
+        $emailLogs = EmailLog::where(function ($q) use ($member) {
             $q->where('to_email', $member->user->email)
               ->orWhere(function ($q2) use ($member) {
                   $q2->where('loggable_type', Member::class)->where('loggable_id', $member->id);
               });
         })->latest()->get();
 
-        return view('admin.members.show', compact('member', 'submissions', 'lastPayment', 'emailLogs'));
+        // Submission IDs that already have a sent receipt email (for Send vs Resend button)
+        $receiptEmailSentIds = EmailLog::where('loggable_type', MonthlyFeeSubmission::class)
+            ->whereIn('loggable_id', $submissions->pluck('id'))
+            ->where('mailable_class', PaymentReceipt::class)
+            ->where('status', 'sent')
+            ->pluck('loggable_id')
+            ->flip()
+            ->toArray();
+
+        return view('admin.members.show', compact(
+            'member', 'submissions', 'lastPayment', 'emailLogs', 'receiptEmailSentIds'
+        ));
     }
 
     public function edit(Member $member)
@@ -189,7 +204,10 @@ class MemberController extends Controller
             'notes'                 => 'nullable|string|max:500',
         ]);
 
-        DB::transaction(function () use ($member, $data) {
+        $receipt    = null;
+        $submission = null;
+
+        DB::transaction(function () use ($member, $data, &$submission, &$receipt) {
             $submission = MonthlyFeeSubmission::create(array_merge($data, [
                 'member_id'        => $member->id,
                 'user_id'          => $member->user_id,
@@ -200,17 +218,25 @@ class MemberController extends Controller
                 'created_by'       => auth()->id(),
             ]));
 
-            $this->generateReceipt($submission, $member);
+            $receipt = $this->generateReceipt($submission, $member);
 
             AuditLog::record('manual_payment_added', $submission, [], [],
                 "Manual payment added for {$member->member_number}");
         });
 
+        if ($receipt && $submission && MailHelper::validEmail($member->user->email ?? null)) {
+            MailHelper::send(
+                $member->user->email, $member->user->name,
+                new PaymentReceipt($receipt),
+                $submission, auth()->id()
+            );
+        }
+
         return redirect()->route('admin.members.show', $member)
             ->with('success', 'Payment added and receipt generated.');
     }
 
-    private function generateReceipt(MonthlyFeeSubmission $submission, Member $member): void
+    private function generateReceipt(MonthlyFeeSubmission $submission, Member $member): \App\Models\Receipt
     {
         $receipt = \App\Models\Receipt::create([
             'receipt_number'            => \App\Models\Receipt::generateReceiptNumber(),
@@ -227,5 +253,7 @@ class MemberController extends Controller
         ]);
 
         $submission->update(['receipt_id' => $receipt->id]);
+
+        return $receipt;
     }
 }

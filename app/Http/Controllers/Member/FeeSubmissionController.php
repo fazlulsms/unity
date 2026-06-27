@@ -101,10 +101,14 @@ class FeeSubmissionController extends Controller
 
     public function downloadReceipt(Receipt $receipt)
     {
-        $member = Auth::user()->member;
+        $user = Auth::user();
 
-        if (!$member || $receipt->member_id !== $member->id) {
-            abort(403);
+        // Admins and treasurers can view any receipt
+        if (!$user->isAdminOrTreasurer()) {
+            $member = $user->member;
+            if (!$member || $receipt->member_id !== $member->id) {
+                abort(403);
+            }
         }
 
         return view('member.fees.receipt', compact('receipt'));

@@ -108,14 +108,17 @@ class EmailController extends Controller
             return back()->with('error', 'No valid email address for this member.');
         }
 
+        $submission = $receipt->submission ?? $member->feeSubmissions()
+            ->whereHas('receipt', fn($q) => $q->where('id', $receipt->id))->first() ?? $member;
+
         $sent = MailHelper::send(
             $user->email, $user->name,
             new PaymentReceipt($receipt),
-            $member->feeSubmissions()->whereHas('receipt', fn($q) => $q->where('id', $receipt->id))->first() ?? $member,
+            $submission,
             auth()->id()
         );
 
         return back()->with($sent ? 'success' : 'error',
-            $sent ? 'Receipt email re-sent.' : 'Email failed — check logs.');
+            $sent ? 'Receipt email sent.' : 'Email failed — check logs.');
     }
 }

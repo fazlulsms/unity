@@ -202,9 +202,12 @@
                                 <i class="fas fa-download"></i>
                             </a>
                             @if(!str_ends_with($member->user->email ?? '', '@unity.local') && $member->user->email)
+                            @php $receiptSent = array_key_exists($sub->id, $receiptEmailSentIds); @endphp
                             <form method="POST" action="{{ route('admin.email.receipt.resend', $sub->receipt) }}">
                                 @csrf
-                                <button type="submit" class="btn btn-xs btn-ghost text-blue-500" title="Email receipt">
+                                <button type="submit"
+                                        class="btn btn-xs btn-ghost {{ $receiptSent ? 'text-blue-500' : 'text-gray-400' }}"
+                                        title="{{ $receiptSent ? 'Resend receipt email' : 'Send receipt email' }}">
                                     <i class="fas fa-envelope"></i>
                                 </button>
                             </form>
