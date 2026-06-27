@@ -72,7 +72,51 @@ class CollectionController extends Controller
             ->orderBy('id')->get();
         $selected = $request->member ? Member::with('user')->find($request->member) : null;
 
-        return view('admin.collections.create', compact('members', 'selected'));
+        // Load all approved payments for active members in one query for the rich right panel
+        $memberIds   = $members->pluck('id');
+        $allPayments = MonthlyFeeSubmission::where('status', 'approved')
+            ->whereIn('member_id', $memberIds)
+            ->orderByDesc('payment_date')
+            ->get(['member_id', 'month', 'year', 'amount', 'payment_date', 'payment_method']);
+
+        $paymentsByMember = $allPayments->groupBy('member_id');
+
+        $memberData = $members->mapWithKeys(function ($m) use ($paymentsByMember) {
+            $payments = $paymentsByMember->get($m->id) ?? collect();
+
+            $recent = $payments->take(5)->map(fn($s) => [
+                'month_name' => date('F', mktime(0, 0, 0, $s->month, 1)),
+                'month'      => (int) $s->month,
+                'year'       => (int) $s->year,
+                'amount'     => (float) $s->amount,
+                'date'       => \Carbon\Carbon::parse($s->payment_date)->format('d M Y'),
+                'method'     => ucfirst($s->payment_method),
+            ])->values()->all();
+
+            $paidMonths = $payments->map(fn($s) =>
+                $s->year . '-' . str_pad($s->month, 2, '0', STR_PAD_LEFT)
+            )->unique()->values()->all();
+
+            return [$m->id => [
+                'name'          => $m->user->name,
+                'number'        => $m->member_number,
+                'phone'         => $m->user->phone ?? '',
+                'email'         => $m->user->email ?? '',
+                'photo'         => $m->user->photo_url,
+                'status'        => $m->status,
+                'join_date'     => $m->join_date->format('d M Y'),
+                'monthly_fee'   => (float) $m->monthly_fee_amount,
+                'total_payable' => (float) $m->total_payable,
+                'total_paid'    => (float) $m->total_paid,
+                'total_due'     => (float) $m->total_due,
+                'payments'      => $recent,
+                'paid_months'   => $paidMonths,
+                'profile_url'   => route('admin.members.show', $m->id),
+                'statement_url' => route('admin.members.statement', $m->id),
+            ]];
+        });
+
+        return view('admin.collections.create', compact('members', 'selected', 'memberData'));
     }
 
     public function store(Request $request)
