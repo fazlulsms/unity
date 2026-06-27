@@ -11,6 +11,7 @@
         ['title' => 'Due Report',            'desc' => 'Members with outstanding dues',               'icon' => 'exclamation', 'color' => 'red',    'route' => 'admin.reports.dues'],
         ['title' => 'Expense Report',        'desc' => 'All expenses by year',                       'icon' => 'minus-circle','color' => 'orange', 'route' => 'admin.reports.expenses'],
         ['title' => 'Annual Fund Summary',   'desc' => 'Yearly income, expenses, and balance',       'icon' => 'chart-bar',   'color' => 'purple', 'route' => 'admin.reports.annual'],
+        ['title' => 'Occasions & Reminders','desc' => 'Birthdays, anniversaries & member religion',  'icon' => 'birthday-cake','color' => 'pink',   'route' => 'admin.reports.occasions'],
     ] as $r)
     <a href="{{ route($r['route']) }}" class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition-shadow group">
         <div class="flex items-center gap-4">

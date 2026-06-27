@@ -51,6 +51,9 @@
                         <span class="ml-1 bg-gray-200 text-gray-700 text-xs font-bold px-1.5 py-0.5 rounded-full">{{ $emailCount }}</span>
                         @endif
                     </a>
+                    <a href="{{ route('admin.members.additional-info.show', $member) }}" class="btn btn-sm btn-secondary">
+                        <i class="fas fa-address-card"></i> Additional Info
+                    </a>
                     <a href="{{ route('admin.collections.create', ['member' => $member->id]) }}" class="btn btn-sm btn-success">
                         <i class="fas fa-plus"></i> Record Payment
                     </a>

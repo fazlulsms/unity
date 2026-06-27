@@ -125,6 +125,16 @@ Route::middleware(['auth', 'verified', 'role:admin|treasurer'])->prefix('admin')
     Route::patch('/users/{user}/toggle-status', [Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
     Route::post('/users/{user}/reset-password', [Admin\UserController::class, 'resetPassword'])->name('users.reset-password');
 
+    // Additional Info & Family
+    Route::get('/members/{member}/additional-info', [Admin\MemberAdditionalInfoController::class, 'show'])->name('members.additional-info.show');
+    Route::get('/members/{member}/additional-info/edit', [Admin\MemberAdditionalInfoController::class, 'edit'])->name('members.additional-info.edit');
+    Route::patch('/members/{member}/additional-info', [Admin\MemberAdditionalInfoController::class, 'update'])->name('members.additional-info.update');
+    Route::get('/members/{member}/family/create', [Admin\MemberAdditionalInfoController::class, 'createFamily'])->name('members.family.create');
+    Route::post('/members/{member}/family', [Admin\MemberAdditionalInfoController::class, 'storeFamily'])->name('members.family.store');
+    Route::get('/members/{member}/family/{family}/edit', [Admin\MemberAdditionalInfoController::class, 'editFamily'])->name('members.family.edit');
+    Route::patch('/members/{member}/family/{family}', [Admin\MemberAdditionalInfoController::class, 'updateFamily'])->name('members.family.update');
+    Route::delete('/members/{member}/family/{family}', [Admin\MemberAdditionalInfoController::class, 'destroyFamily'])->name('members.family.destroy');
+
     // Reports
     Route::get('/reports', [Admin\ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/members', [Admin\ReportController::class, 'members'])->name('reports.members');
@@ -132,6 +142,7 @@ Route::middleware(['auth', 'verified', 'role:admin|treasurer'])->prefix('admin')
     Route::get('/reports/dues', [Admin\ReportController::class, 'dues'])->name('reports.dues');
     Route::get('/reports/expenses', [Admin\ReportController::class, 'expenses'])->name('reports.expenses');
     Route::get('/reports/annual', [Admin\ReportController::class, 'annual'])->name('reports.annual');
+    Route::get('/reports/occasions', [Admin\ReportController::class, 'occasions'])->name('reports.occasions');
 });
 
 require __DIR__ . '/auth.php';

@@ -211,5 +211,108 @@
         </div>
 
     </div>
+
+    {{-- ── Upcoming Events ───────────────────────────────── --}}
+    @if($memberBirthdays->isNotEmpty() || $familyBirthdays->isNotEmpty() || $upcomingAnniversaries->isNotEmpty())
+    <div>
+        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Upcoming Events (Next 30 Days)</h2>
+        <div class="grid lg:grid-cols-3 gap-5">
+
+            {{-- Member Birthdays --}}
+            <div class="card">
+                <div class="card-header">
+                    <div class="flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
+                            <i class="fas fa-birthday-cake text-orange-500 text-xs"></i>
+                        </span>
+                        <p class="font-semibold text-gray-800 text-sm">Member Birthdays</p>
+                    </div>
+                </div>
+                @if($memberBirthdays->isNotEmpty())
+                <div class="divide-y divide-gray-50">
+                    @foreach($memberBirthdays as $m)
+                    <div class="flex items-center gap-3 px-5 py-3">
+                        <img src="{{ $m->user->photo_url }}" class="w-8 h-8 rounded-full object-cover shrink-0" alt="">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">{{ $m->user->name }}</p>
+                            <p class="text-xs text-gray-400">{{ $m->user->date_of_birth->format('d M') }}</p>
+                        </div>
+                        <span class="text-xs font-semibold {{ $m->_days === 0 ? 'text-orange-600' : 'text-gray-500' }} shrink-0">
+                            {{ $m->_days === 0 ? 'Today!' : 'in ' . $m->_days . 'd' }}
+                        </span>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <div class="px-5 py-6 text-center text-sm text-gray-400">No upcoming birthdays.</div>
+                @endif
+            </div>
+
+            {{-- Family Birthdays --}}
+            <div class="card">
+                <div class="card-header">
+                    <div class="flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-lg bg-pink-100 flex items-center justify-center shrink-0">
+                            <i class="fas fa-heart text-pink-500 text-xs"></i>
+                        </span>
+                        <p class="font-semibold text-gray-800 text-sm">Family Birthdays</p>
+                    </div>
+                </div>
+                @if($familyBirthdays->isNotEmpty())
+                <div class="divide-y divide-gray-50">
+                    @foreach($familyBirthdays as $f)
+                    <div class="flex items-center gap-3 px-5 py-3">
+                        <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center shrink-0">
+                            <i class="fas fa-user text-pink-400 text-xs"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">{{ $f->name }}</p>
+                            <p class="text-xs text-gray-400">{{ $f->relationship_label }} of {{ $f->member->user->name }}</p>
+                        </div>
+                        <span class="text-xs font-semibold {{ $f->_days === 0 ? 'text-pink-600' : 'text-gray-500' }} shrink-0">
+                            {{ $f->_days === 0 ? 'Today!' : 'in ' . $f->_days . 'd' }}
+                        </span>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <div class="px-5 py-6 text-center text-sm text-gray-400">No upcoming family birthdays.</div>
+                @endif
+            </div>
+
+            {{-- Marriage Anniversaries --}}
+            <div class="card">
+                <div class="card-header">
+                    <div class="flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-lg bg-rose-100 flex items-center justify-center shrink-0">
+                            <i class="fas fa-ring text-rose-500 text-xs"></i>
+                        </span>
+                        <p class="font-semibold text-gray-800 text-sm">Marriage Anniversaries</p>
+                    </div>
+                </div>
+                @if($upcomingAnniversaries->isNotEmpty())
+                <div class="divide-y divide-gray-50">
+                    @foreach($upcomingAnniversaries as $a)
+                    <div class="flex items-center gap-3 px-5 py-3">
+                        <img src="{{ $a->member->user->photo_url }}" class="w-8 h-8 rounded-full object-cover shrink-0" alt="">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">{{ $a->member->user->name }}</p>
+                            <p class="text-xs text-gray-400">{{ $a->marriage_anniversary->format('d M') }}</p>
+                        </div>
+                        <span class="text-xs font-semibold {{ $a->_days === 0 ? 'text-rose-600' : 'text-gray-500' }} shrink-0">
+                            {{ $a->_days === 0 ? 'Today!' : 'in ' . $a->_days . 'd' }}
+                        </span>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <div class="px-5 py-6 text-center text-sm text-gray-400">No upcoming anniversaries.</div>
+                @endif
+            </div>
+
+        </div>
+    </div>
+    @endif
+
 </div>
 @endsection

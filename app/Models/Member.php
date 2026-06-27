@@ -55,6 +55,26 @@ class Member extends Model
         return $this->hasMany(MemberProfileHistory::class);
     }
 
+    public function additionalInfo()
+    {
+        return $this->hasOne(MemberAdditionalInfo::class);
+    }
+
+    public function familyMembers()
+    {
+        return $this->hasMany(MemberFamilyMember::class);
+    }
+
+    public function spouse()
+    {
+        return $this->hasOne(MemberFamilyMember::class)->where('type', 'spouse');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(MemberFamilyMember::class)->where('type', 'child');
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';

@@ -103,6 +103,92 @@ class ReportController extends Controller
         return view('admin.reports.expenses', compact('expenses', 'total', 'byCategory', 'year'));
     }
 
+    public function occasions(Request $request)
+    {
+        $filter  = $request->get('filter', 'member_birthdays');
+        $days    = (int) $request->get('days', 365);
+        $results = collect();
+
+        $daysUntil = function (\Carbon\Carbon $date) {
+            $next = $date->copy()->setYear(now()->year);
+            if ($next->lt(now()->startOfDay())) {
+                $next->addYear();
+            }
+            return (int) $next->diffInDays(now()->startOfDay());
+        };
+
+        if ($filter === 'member_birthdays') {
+            $results = \App\Models\Member::with('user')
+                ->where('status', 'active')
+                ->whereHas('user', fn($q) => $q->whereNotNull('date_of_birth'))
+                ->get()
+                ->map(fn($m) => (object)[
+                    'label' => $m->user->name,
+                    'sub'   => $m->member_number,
+                    'date'  => $m->user->date_of_birth,
+                    'days'  => $daysUntil($m->user->date_of_birth),
+                    'link'  => route('admin.members.show', $m),
+                    'photo' => $m->user->photo_url,
+                ])
+                ->filter(fn($r) => $r->days <= $days)
+                ->sortBy('days')
+                ->values();
+        }
+
+        if ($filter === 'family_birthdays') {
+            $results = \App\Models\MemberFamilyMember::with('member.user')
+                ->whereHas('member', fn($q) => $q->where('status', 'active'))
+                ->whereNotNull('date_of_birth')
+                ->get()
+                ->map(fn($f) => (object)[
+                    'label' => $f->name,
+                    'sub'   => $f->relationship_label . ' of ' . $f->member->user->name,
+                    'date'  => $f->date_of_birth,
+                    'days'  => $daysUntil($f->date_of_birth),
+                    'link'  => route('admin.members.additional-info.show', $f->member),
+                    'photo' => $f->photo_url,
+                ])
+                ->filter(fn($r) => $r->days <= $days)
+                ->sortBy('days')
+                ->values();
+        }
+
+        if ($filter === 'anniversaries') {
+            $results = \App\Models\MemberAdditionalInfo::with('member.user')
+                ->whereHas('member', fn($q) => $q->where('status', 'active'))
+                ->whereNotNull('marriage_anniversary')
+                ->get()
+                ->map(fn($a) => (object)[
+                    'label' => $a->member->user->name,
+                    'sub'   => 'Anniversary on ' . $a->marriage_anniversary->format('d M'),
+                    'date'  => $a->marriage_anniversary,
+                    'days'  => $daysUntil($a->marriage_anniversary),
+                    'link'  => route('admin.members.additional-info.show', $a->member),
+                    'photo' => $a->member->user->photo_url,
+                ])
+                ->filter(fn($r) => $r->days <= $days)
+                ->sortBy('days')
+                ->values();
+        }
+
+        if ($filter === 'religion') {
+            $results = \App\Models\MemberAdditionalInfo::with('member.user')
+                ->whereHas('member', fn($q) => $q->where('status', 'active'))
+                ->whereNotNull('religion')
+                ->get()
+                ->groupBy('religion')
+                ->map(fn($group, $religion) => (object)[
+                    'label'   => $religion,
+                    'count'   => $group->count(),
+                    'members' => $group->map(fn($a) => $a->member->user->name)->join(', '),
+                ])
+                ->sortByDesc('count')
+                ->values();
+        }
+
+        return view('admin.reports.occasions', compact('results', 'filter', 'days'));
+    }
+
     public function annual(Request $request)
     {
         $year = $request->year ?? now()->year;
