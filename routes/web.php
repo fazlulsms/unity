@@ -70,6 +70,8 @@ Route::middleware(['auth', 'verified', 'role:admin|treasurer'])->prefix('admin')
     Route::get('/members', [Admin\MemberController::class, 'index'])->name('members.index');
     Route::get('/members/{member}/statement', [Admin\MemberController::class, 'statement'])->name('members.statement');
     Route::get('/members/{member}/profile-pdf', [Admin\MemberController::class, 'profilePdf'])->name('members.profile-pdf');
+    Route::get('/members/{member}/history', [Admin\MemberController::class, 'history'])->name('members.history');
+    Route::get('/members/{member}/emails', [Admin\MemberController::class, 'emails'])->name('members.emails');
     Route::get('/members/{member}', [Admin\MemberController::class, 'show'])->name('members.show');
     Route::get('/members/{member}/edit', [Admin\MemberController::class, 'edit'])->name('members.edit');
     Route::patch('/members/{member}', [Admin\MemberController::class, 'update'])->name('members.update');

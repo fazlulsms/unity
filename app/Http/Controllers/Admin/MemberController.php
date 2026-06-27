@@ -39,17 +39,10 @@ class MemberController extends Controller
     public function show(Member $member)
     {
         $member->load('user', 'application');
-        $submissions  = $member->feeSubmissions()->with('receipt')->latest()->paginate(12);
-        $lastPayment  = $member->approvedFeeSubmissions()->latest('payment_date')->first();
+        $submissions = $member->feeSubmissions()->with('receipt')->latest()->paginate(12);
+        $lastPayment = $member->approvedFeeSubmissions()->latest('payment_date')->first();
 
-        $emailLogs = EmailLog::where(function ($q) use ($member) {
-            $q->where('to_email', $member->user->email)
-              ->orWhere(function ($q2) use ($member) {
-                  $q2->where('loggable_type', Member::class)->where('loggable_id', $member->id);
-              });
-        })->latest()->get();
-
-        // Submission IDs that already have a sent receipt email (for Send vs Resend button)
+        // Receipt email sent status — needed for the Send/Resend icon in the payment table
         $receiptEmailSentIds = EmailLog::where('loggable_type', MonthlyFeeSubmission::class)
             ->whereIn('loggable_id', $submissions->pluck('id'))
             ->where('mailable_class', PaymentReceipt::class)
@@ -58,14 +51,56 @@ class MemberController extends Controller
             ->flip()
             ->toArray();
 
-        $profileHistories = MemberProfileHistory::with('updater')
-            ->where('member_id', $member->id)
-            ->latest()
-            ->get();
+        $historyCount = MemberProfileHistory::where('member_id', $member->id)->count();
+        $emailCount   = EmailLog::where('to_email', $member->user->email)->count();
 
         return view('admin.members.show', compact(
-            'member', 'submissions', 'lastPayment', 'emailLogs', 'receiptEmailSentIds', 'profileHistories'
+            'member', 'submissions', 'lastPayment', 'receiptEmailSentIds', 'historyCount', 'emailCount'
         ));
+    }
+
+    public function history(Member $member, Request $request)
+    {
+        $member->load('user');
+
+        $query = MemberProfileHistory::with('updater')
+            ->where('member_id', $member->id);
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $histories = $query->latest()->paginate(20)->withQueryString();
+
+        return view('admin.members.history', compact('member', 'histories'));
+    }
+
+    public function emails(Member $member, Request $request)
+    {
+        $member->load('user');
+
+        $query = EmailLog::with('sender')
+            ->where(function ($q) use ($member) {
+                $q->where('to_email', $member->user->email)
+                  ->orWhere(function ($q2) use ($member) {
+                      $q2->where('loggable_type', Member::class)
+                         ->where('loggable_id', $member->id);
+                  });
+            });
+
+        if ($request->filled('search')) {
+            $query->where('subject', 'like', '%' . $request->search . '%');
+        }
+        if ($request->filled('status') && in_array($request->status, ['sent', 'failed'])) {
+            $query->where('status', $request->status);
+        }
+
+        $emailLogs = $query->latest()->paginate(20)->withQueryString();
+
+        return view('admin.members.emails', compact('member', 'emailLogs'));
     }
 
     public function edit(Member $member)
