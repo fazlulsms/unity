@@ -53,10 +53,30 @@
     <i class="fas fa-arrow-trend-up w-4 text-center"></i>
     <span>Other Income</span>
 </a>
+<a href="{{ route('admin.bank-accounts.index') }}"
+   class="sidebar-link {{ request()->routeIs('admin.bank-accounts.*') ? 'active' : '' }}">
+    <i class="fas fa-piggy-bank w-4 text-center"></i>
+    <span>Bank Accounts</span>
+</a>
+<a href="{{ route('admin.bank-deposits.index') }}"
+   class="sidebar-link {{ request()->routeIs('admin.bank-deposits.*') ? 'active' : '' }}">
+    <i class="fas fa-money-bill-transfer w-4 text-center"></i>
+    <span>Bank Deposits</span>
+</a>
+<a href="{{ route('admin.bank-withdrawals.index') }}"
+   class="sidebar-link {{ request()->routeIs('admin.bank-withdrawals.*') ? 'active' : '' }}">
+    <i class="fas fa-money-bill-wave w-4 text-center"></i>
+    <span>Bank Withdrawals</span>
+</a>
 <a href="{{ route('admin.fdr.index') }}"
    class="sidebar-link {{ request()->routeIs('admin.fdr.*') ? 'active' : '' }}">
     <i class="fas fa-building-columns w-4 text-center"></i>
-    <span>FDR Records</span>
+    <span>FDR Management</span>
+</a>
+<a href="{{ route('admin.bank-summary.index') }}"
+   class="sidebar-link {{ request()->routeIs('admin.bank-summary.*') ? 'active' : '' }}">
+    <i class="fas fa-scale-balanced w-4 text-center"></i>
+    <span>Bank Summary</span>
 </a>
 
 {{-- Content --}}

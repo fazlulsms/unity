@@ -8,7 +8,24 @@
     <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
         <form action="{{ route('admin.fdr.update', $fdr) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
             @csrf @method('PUT')
+            @if($errors->any())
+            <div class="alert-error mb-4">
+                <i class="fas fa-circle-exclamation text-red-500 mt-0.5 shrink-0"></i>
+                <ul class="list-disc list-inside space-y-0.5">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
+            </div>
+            @endif
             <div class="grid sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Funding Bank Account</label>
+                    <select name="bank_account_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer">
+                        <option value="">— Not linked to a tracked account —</option>
+                        @foreach($accounts as $a)
+                        <option value="{{ $a->id }}" {{ old('bank_account_id', $fdr->bank_account_id) == $a->id ? 'selected' : '' }}>
+                            {{ $a->bank_name }} — {{ $a->account_number }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Bank Name</label>
                     <input type="text" name="bank_name" value="{{ old('bank_name', $fdr->bank_name) }}" required

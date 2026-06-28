@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class FdrRecord extends Model
 {
     protected $fillable = [
-        'bank_name', 'branch', 'fdr_number', 'opening_date', 'maturity_date',
+        'bank_account_id', 'bank_name', 'branch', 'fdr_number', 'opening_date', 'maturity_date',
         'closure_date', 'principal_amount', 'interest_rate',
-        'expected_maturity_amount', 'actual_maturity_amount',
-        'interest_received', 'status', 'is_public_reference', 'notes',
+        'expected_maturity_amount', 'actual_maturity_amount', 'principal_returned',
+        'interest_received', 'tax_deduction', 'status', 'is_public_reference', 'notes',
         'attachment', 'closure_attachment', 'created_by', 'updated_by',
     ];
 
@@ -23,7 +23,9 @@ class FdrRecord extends Model
             'principal_amount'         => 'decimal:2',
             'expected_maturity_amount' => 'decimal:2',
             'actual_maturity_amount'   => 'decimal:2',
+            'principal_returned'       => 'decimal:2',
             'interest_received'        => 'decimal:2',
+            'tax_deduction'            => 'decimal:2',
             'interest_rate'            => 'decimal:2',
             'is_public_reference'      => 'boolean',
         ];
@@ -32,6 +34,19 @@ class FdrRecord extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function bankAccount()
+    {
+        return $this->belongsTo(BankAccount::class, 'bank_account_id');
+    }
+
+    /**
+     * Net interest realised after any tax / deduction.
+     */
+    public function getNetInterestAttribute(): float
+    {
+        return max(0, (float) $this->interest_received - (float) $this->tax_deduction);
     }
 
     public function linkedIncome()

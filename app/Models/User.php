@@ -67,6 +67,11 @@ class User extends Authenticatable
         return $this->hasAnyRole(['admin', 'treasurer']);
     }
 
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasAnyRole(['super_admin', 'admin']);
+    }
+
     public function getPhotoUrlAttribute(): string
     {
         return static::resolvedPhotoUrl($this->photo)

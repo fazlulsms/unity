@@ -56,11 +56,23 @@
                         </select>
                     </div>
                     <div>
+                        <label class="form-label">Principal Returned (৳)</label>
+                        <input type="number" name="principal_returned" value="{{ old('principal_returned', $fdr->principal_amount) }}"
+                               min="0" step="0.01" class="form-input" placeholder="{{ number_format($fdr->principal_amount, 2) }}">
+                        <p class="text-xs text-gray-400 mt-1">Defaults to the original principal.</p>
+                    </div>
+                    <div>
                         <label class="form-label">Actual Interest Received (৳) <span class="form-required">*</span></label>
                         <input type="number" name="interest_received" value="{{ old('interest_received') }}"
                                required min="0" step="0.01" class="form-input"
                                placeholder="0.00">
-                        <p class="text-xs text-gray-400 mt-1">This will be posted to Other Income.</p>
+                        <p class="text-xs text-gray-400 mt-1">Gross interest — posted to Other Income.</p>
+                    </div>
+                    <div>
+                        <label class="form-label">Tax / Deduction (৳)</label>
+                        <input type="number" name="tax_deduction" value="{{ old('tax_deduction', 0) }}"
+                               min="0" step="0.01" class="form-input" placeholder="0.00">
+                        <p class="text-xs text-gray-400 mt-1">Tax withheld on interest, if any.</p>
                     </div>
                     <div>
                         <label class="form-label">Actual Maturity Amount (৳)</label>
@@ -70,6 +82,12 @@
                         <p class="text-xs text-gray-400 mt-1">Principal + interest received from bank.</p>
                     </div>
                 </div>
+                @if($fdr->bank_account_id)
+                <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800">
+                    <i class="fas fa-building-columns mr-1.5"></i>
+                    On closure, <strong>{{ $fdr->bankAccount->bank_name ?? 'the linked account' }}</strong>'s available balance increases by Principal Returned + Net Interest (interest − tax).
+                </div>
+                @endif
 
                 <div>
                     <label class="form-label">Closure Proof / Attachment</label>

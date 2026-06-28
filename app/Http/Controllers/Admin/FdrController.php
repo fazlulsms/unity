@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
+use App\Models\BankAccount;
 use App\Models\FdrRecord;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class FdrController extends Controller
 {
@@ -22,7 +24,8 @@ class FdrController extends Controller
 
     public function create()
     {
-        return view('admin.fdr.create');
+        $accounts = BankAccount::where('status', 'active')->orderBy('bank_name')->get();
+        return view('admin.fdr.create', compact('accounts'));
     }
 
     public function show(FdrRecord $fdr)
@@ -34,6 +37,7 @@ class FdrController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            'bank_account_id'          => 'nullable|exists:bank_accounts,id',
             'bank_name'                => 'required|string|max:255',
             'branch'                   => 'nullable|string|max:255',
             'fdr_number'               => 'required|string|max:100',
@@ -48,6 +52,17 @@ class FdrController extends Controller
             'attachment'               => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:5120',
             'notes'                    => 'nullable|string|max:1000',
         ]);
+
+        // When funded from a tracked bank account, principal cannot exceed its available balance.
+        if (!empty($data['bank_account_id']) && $data['status'] === 'active') {
+            $account   = BankAccount::find($data['bank_account_id']);
+            $available = $account?->available_balance ?? 0;
+            if ($data['principal_amount'] > $available) {
+                throw ValidationException::withMessages([
+                    'principal_amount' => 'FDR amount exceeds available balance (৳' . number_format($available, 2) . ') for the selected account.',
+                ]);
+            }
+        }
 
         if ($request->hasFile('attachment')) {
             $file     = $request->file('attachment');
@@ -75,13 +90,24 @@ class FdrController extends Controller
 
     public function edit(FdrRecord $fdr)
     {
-        return view('admin.fdr.edit', compact('fdr'));
+        if ($fdr->isClosed() && !auth()->user()->isSuperAdmin()) {
+            return redirect()->route('admin.fdr.show', $fdr)
+                ->with('error', 'A closed FDR can only be edited by a super admin.');
+        }
+        $accounts = BankAccount::orderBy('bank_name')->get();
+        return view('admin.fdr.edit', compact('fdr', 'accounts'));
     }
 
     public function update(Request $request, FdrRecord $fdr)
     {
+        if ($fdr->isClosed() && !auth()->user()->isSuperAdmin()) {
+            return redirect()->route('admin.fdr.show', $fdr)
+                ->with('error', 'A closed FDR can only be edited by a super admin.');
+        }
+
         $old  = $fdr->toArray();
         $data = $request->validate([
+            'bank_account_id'          => 'nullable|exists:bank_accounts,id',
             'bank_name'                => 'required|string|max:255',
             'branch'                   => 'nullable|string|max:255',
             'fdr_number'               => 'required|string|max:100',
@@ -141,12 +167,20 @@ class FdrController extends Controller
 
         $data = $request->validate([
             'closure_date'           => 'required|date',
+            'principal_returned'     => 'nullable|numeric|min:0',
             'interest_received'      => 'required|numeric|min:0',
+            'tax_deduction'          => 'nullable|numeric|min:0',
             'actual_maturity_amount' => 'nullable|numeric|min:0',
             'status'                 => 'required|in:matured,closed,renewed',
             'closure_attachment'     => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:5120',
             'notes'                  => 'nullable|string|max:1000',
         ]);
+
+        // Default the principal returned to the original principal when left blank.
+        if (($data['principal_returned'] ?? null) === null) {
+            $data['principal_returned'] = $fdr->principal_amount;
+        }
+        $data['tax_deduction'] = $data['tax_deduction'] ?? 0;
 
         if ($request->hasFile('closure_attachment')) {
             $file     = $request->file('closure_attachment');

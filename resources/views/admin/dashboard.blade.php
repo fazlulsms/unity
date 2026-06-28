@@ -130,6 +130,51 @@
         </div>
     </div>
 
+    {{-- ── Bank & Cash Flow ───────────────────────────────── --}}
+    <div>
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Bank &amp; Cash Flow</h2>
+            <a href="{{ route('admin.bank-summary.index') }}" class="text-xs text-blue-600 hover:underline font-medium">Full report <i class="fas fa-chevron-right text-[10px]"></i></a>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+            <a href="{{ route('admin.bank-deposits.index') }}" class="card p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-medium text-gray-400">Bank Deposits</p>
+                    <span class="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center"><i class="fas fa-money-bill-transfer text-emerald-600 text-xs"></i></span>
+                </div>
+                <p class="text-lg font-bold text-emerald-700">৳{{ number_format($totalBankDeposits, 0) }}</p>
+            </a>
+            <a href="{{ route('admin.collections.index') }}" class="card p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-medium text-gray-400">Cash in Hand</p>
+                    <span class="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center"><i class="fas fa-sack-dollar text-amber-600 text-xs"></i></span>
+                </div>
+                <p class="text-lg font-bold {{ $cashInHand < 0 ? 'text-red-600' : 'text-amber-600' }}">৳{{ number_format($cashInHand, 0) }}</p>
+            </a>
+            <a href="{{ route('admin.bank-accounts.index') }}" class="card p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-medium text-gray-400">Bank Balance</p>
+                    <span class="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center"><i class="fas fa-wallet text-blue-600 text-xs"></i></span>
+                </div>
+                <p class="text-lg font-bold text-blue-700">৳{{ number_format($totalBankAvailable, 0) }}</p>
+            </a>
+            <a href="{{ route('admin.fdr.index') }}" class="card p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-medium text-gray-400">Active FDR</p>
+                    <span class="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center"><i class="fas fa-building-columns text-violet-600 text-xs"></i></span>
+                </div>
+                <p class="text-lg font-bold text-violet-700">৳{{ number_format($totalFdrPrincipal, 0) }}</p>
+            </a>
+            <a href="{{ route('admin.bank-withdrawals.index') }}" class="card p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-medium text-gray-400">Withdrawn</p>
+                    <span class="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center"><i class="fas fa-money-bill-wave text-red-600 text-xs"></i></span>
+                </div>
+                <p class="text-lg font-bold text-red-600">৳{{ number_format($totalBankWithdrawn, 0) }}</p>
+            </a>
+        </div>
+    </div>
+
     {{-- ── Activity Tables ────────────────────────────────── --}}
     <div class="grid lg:grid-cols-2 gap-6">
 

@@ -107,6 +107,15 @@ Route::middleware(['auth', 'verified', 'role:admin|treasurer'])->prefix('admin')
     Route::get('/fdr/{fdr}/close', [Admin\FdrController::class, 'closeForm'])->name('fdr.close');
     Route::post('/fdr/{fdr}/close', [Admin\FdrController::class, 'close'])->name('fdr.close.store');
 
+    // ── Bank & Cash Flow ─────────────────────────────────────────────────────
+    Route::resource('bank-accounts', Admin\BankAccountController::class)->except(['destroy']);
+    Route::post('/bank-accounts/{bankAccount}/toggle-status', [Admin\BankAccountController::class, 'toggleStatus'])->name('bank-accounts.toggle-status');
+
+    Route::resource('bank-deposits', Admin\BankDepositController::class)->except(['destroy']);
+    Route::resource('bank-withdrawals', Admin\BankWithdrawalController::class)->except(['destroy']);
+
+    Route::get('/bank-summary', [Admin\BankSummaryController::class, 'index'])->name('bank-summary.index');
+
     // Notices
     Route::resource('notices', Admin\NoticeController::class);
 

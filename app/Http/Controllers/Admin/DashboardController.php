@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BankAccount;
+use App\Models\BankDeposit;
+use App\Models\BankWithdrawal;
 use App\Models\Expense;
 use App\Models\FdrRecord;
 use App\Models\Income;
@@ -49,6 +52,14 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
         $netFund = $totalCollection + $totalIncome - $totalExpenses;
+
+        // ── Bank & cash-flow summary ─────────────────────────────────────────
+        $bankAccounts        = BankAccount::all();
+        $totalBankDeposits   = (float) BankDeposit::sum('amount');
+        $totalBankWithdrawn  = (float) BankWithdrawal::sum('amount');
+        $cashInHand          = $totalCollection - $totalBankDeposits;
+        $totalBankAvailable  = $bankAccounts->sum('available_balance');
+        $bankAccountsCount   = $bankAccounts->count();
 
         $pendingPaymentsList = MonthlyFeeSubmission::with('member.user')
             ->where('status', 'pending')
@@ -118,6 +129,7 @@ class DashboardController extends Controller
             'totalCollection', 'totalExpenses', 'totalIncome',
             'totalFdrPrincipal', 'totalFdrInterest', 'netFund',
             'activeFdrCount', 'closedFdrCount', 'thisMonthFdrInterest', 'upcomingFdrMaturities',
+            'totalBankDeposits', 'totalBankWithdrawn', 'cashInHand', 'totalBankAvailable', 'bankAccountsCount',
             'pendingPaymentsList', 'recentApplications',
             'memberBirthdays', 'familyBirthdays', 'upcomingAnniversaries'
         ));
