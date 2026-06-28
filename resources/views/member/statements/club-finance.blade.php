@@ -6,10 +6,9 @@
 @section('content')
 <div class="space-y-6 max-w-screen-xl">
 
-    <div class="flex items-center justify-between">
-        <p class="text-sm text-gray-500">Read-only snapshot of the club's financial position as of {{ now()->format('d M Y') }}.</p>
-        <a href="{{ route('member.statements.club-finance-pdf') }}" class="btn-primary btn-sm"><i class="fas fa-download"></i> PDF</a>
-    </div>
+    <p class="text-sm text-gray-500">Read-only snapshot of the club's financial position · {{ $range->label }}.</p>
+
+    @include('partials.period-filter', ['range' => $range, 'action' => route('member.statements.club-finance'), 'pdf' => route('member.statements.club-finance-pdf')])
 
     {{-- Contributions & cash flow --}}
     <div>
@@ -56,17 +55,17 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
-                    @forelse($accounts as $a)
+                    @forelse($bankRows as $r)
                     <tr class="hover:bg-gray-50">
                         <td class="px-5 py-3">
-                            <a href="{{ route('member.finance.bank-show', $a) }}" class="font-medium text-blue-600 hover:underline">{{ $a->bank_name }}</a>
-                            <p class="text-xs text-gray-400 font-mono">{{ $a->masked_account_number }}</p>
+                            <a href="{{ route('member.finance.bank-show', $r['account']) }}" class="font-medium text-blue-600 hover:underline">{{ $r['account']->bank_name }}</a>
+                            <p class="text-xs text-gray-400 font-mono">{{ $r['account']->masked_account_number }}</p>
                         </td>
-                        <td class="px-5 py-3 text-right text-gray-700">৳{{ number_format($a->total_deposited, 0) }}</td>
-                        <td class="px-5 py-3 text-right font-semibold text-emerald-600">৳{{ number_format($a->available_balance, 0) }}</td>
-                        <td class="px-5 py-3 text-right text-violet-600">৳{{ number_format($a->active_fdr_amount, 0) }}</td>
-                        <td class="px-5 py-3 text-right text-teal-600">৳{{ number_format($a->fdr_interest_income, 0) }}</td>
-                        <td class="px-5 py-3 text-right text-red-600">৳{{ number_format($a->total_withdrawn, 0) }}</td>
+                        <td class="px-5 py-3 text-right text-gray-700">৳{{ number_format($r['deposited'], 0) }}</td>
+                        <td class="px-5 py-3 text-right font-semibold text-emerald-600">৳{{ number_format($r['available'], 0) }}</td>
+                        <td class="px-5 py-3 text-right text-violet-600">৳{{ number_format($r['activeFdr'], 0) }}</td>
+                        <td class="px-5 py-3 text-right text-teal-600">৳{{ number_format($r['interest'], 0) }}</td>
+                        <td class="px-5 py-3 text-right text-red-600">৳{{ number_format($r['withdrawn'], 0) }}</td>
                     </tr>
                     @empty
                     <tr><td colspan="6" class="px-5 py-10 text-center text-gray-400">No bank accounts.</td></tr>

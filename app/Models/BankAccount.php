@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class BankAccount extends Model
@@ -130,5 +131,67 @@ class BankAccount extends Model
             - $this->active_fdr_amount
             + $this->fdr_interest_income
             + $this->fdr_principal_adjustment;
+    }
+
+    // ── Period-aware figures (for the date-range filter) ─────────────────────
+    // Flows are summed within [$from, $to]; the available balance is a position
+    // taken as of a given date.
+
+    public function depositsBetween(?Carbon $from, ?Carbon $to): float
+    {
+        return (float) $this->deposits()
+            ->when($from, fn($q) => $q->whereDate('deposit_date', '>=', $from))
+            ->when($to, fn($q) => $q->whereDate('deposit_date', '<=', $to))
+            ->sum('amount');
+    }
+
+    public function withdrawalsBetween(?Carbon $from, ?Carbon $to): float
+    {
+        return (float) $this->withdrawals()
+            ->when($from, fn($q) => $q->whereDate('withdrawal_date', '>=', $from))
+            ->when($to, fn($q) => $q->whereDate('withdrawal_date', '<=', $to))
+            ->sum('amount');
+    }
+
+    public function fdrInterestBetween(?Carbon $from, ?Carbon $to): float
+    {
+        return (float) $this->fdrs()
+            ->whereIn('status', ['matured', 'closed'])
+            ->when($from, fn($q) => $q->whereDate('closure_date', '>=', $from))
+            ->when($to, fn($q) => $q->whereDate('closure_date', '<=', $to))
+            ->get(['interest_received', 'tax_deduction'])
+            ->sum(fn($f) => max(0, (float) $f->interest_received - (float) $f->tax_deduction));
+    }
+
+    /** Principal still locked in FDRs as of a date. */
+    public function activeFdrAsOf(?Carbon $asOf = null): float
+    {
+        $asOf = $asOf ?: Carbon::now();
+        return (float) $this->fdrs()
+            ->whereDate('opening_date', '<=', $asOf)
+            ->where(fn($w) => $w->whereNull('closure_date')->orWhereDate('closure_date', '>', $asOf))
+            ->sum('principal_amount');
+    }
+
+    /** Available balance position as of a date. */
+    public function availableBalanceAsOf(?Carbon $asOf = null): float
+    {
+        $asOf = $asOf ?: Carbon::now();
+
+        $deposited = $this->depositsBetween(null, $asOf);
+        $withdrawn = $this->withdrawalsBetween(null, $asOf);
+
+        $closed = $this->fdrs()
+            ->whereIn('status', ['matured', 'closed'])
+            ->whereDate('closure_date', '<=', $asOf)
+            ->get(['principal_amount', 'principal_returned', 'interest_received', 'tax_deduction']);
+
+        $interest = $closed->sum(fn($f) => max(0, (float) $f->interest_received - (float) $f->tax_deduction));
+        $adj      = $closed->sum(fn($f) => (float) ($f->principal_returned ?? $f->principal_amount) - (float) $f->principal_amount);
+
+        return (float) $this->opening_balance
+            + $deposited - $withdrawn
+            - $this->activeFdrAsOf($asOf)
+            + $interest + $adj;
     }
 }

@@ -122,8 +122,8 @@ class FeeSubmissionController extends Controller
             return redirect()->route('member.dashboard')->with('error', 'Member profile not found.');
         }
 
-        $year = (int) $request->get('year', now()->year);
-        $data = \App\Support\MemberStatement::personal($member, $year);
+        $range = \App\Support\DateRange::fromRequest($request, 'this_year');
+        $data  = \App\Support\MemberStatement::personal($member, $range);
 
         return view('member.statement', array_merge($data, compact('member')));
     }

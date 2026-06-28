@@ -14,42 +14,41 @@ use App\Models\MemberAdditionalInfo;
 use App\Models\MemberFamilyMember;
 use App\Models\MembershipApplication;
 use App\Models\MonthlyFeeSubmission;
+use App\Support\DateRange;
 use App\Support\FinanceSummary;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $currentMonth = now()->month;
-        $currentYear  = now()->year;
+        // Dashboard defaults to the current month.
+        $range = DateRange::fromRequest($request, 'this_month');
+        $from  = $range->from;
+        $to    = $range->to;
 
         $totalMembers        = Member::count();
         $activeMembers       = Member::where('status', 'active')->count();
         $pendingApplications = MembershipApplication::where('status', 'pending')->count();
         $pendingPayments     = MonthlyFeeSubmission::where('status', 'pending')->count();
 
-        $expectedCollection = Member::where('status', 'active')->sum('monthly_fee_amount');
-        $collectedThisMonth = MonthlyFeeSubmission::where('status', 'approved')
-            ->where('month', $currentMonth)
-            ->where('year', $currentYear)
-            ->sum('amount');
-        $dueThisMonth = max(0, $expectedCollection - $collectedThisMonth);
+        // ── Period-scoped finance figures ───────────────────────────────────
+        $finance = FinanceSummary::all($from, $to);
 
-        $monthlyCollection = MonthlyFeeSubmission::where('status', 'approved')->sum('amount');
-        $boosterCollection = FinanceSummary::boosterCollection();
-        // Booster Contribution is direct member contribution — folded into the total.
-        $totalCollection = $monthlyCollection + $boosterCollection;
-        $totalExpenses   = Expense::where('status', 'active')->sum('amount');
-        $totalIncome     = Income::where('status', 'active')->sum('amount');
-        $totalFdrPrincipal     = FdrRecord::whereIn('status', ['active', 'matured'])->sum('principal_amount');
-        $totalFdrInterest      = FdrRecord::sum('interest_received');
-        $activeFdrCount        = FdrRecord::where('status', 'active')->count();
-        $closedFdrCount        = FdrRecord::whereIn('status', ['matured', 'closed', 'renewed'])->count();
-        $thisMonthFdrInterest  = Income::where('income_type', 'fdr_interest')
-            ->where('status', 'active')
-            ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
-            ->sum('amount');
+        $expectedCollection = FinanceSummary::monthlyExpected($from, $to);
+        $collectedThisMonth = $finance['monthly_collection'];
+        $dueThisMonth       = max(0, $expectedCollection - $collectedThisMonth);
+
+        $monthlyCollection = $finance['monthly_collection'];
+        $boosterCollection = $finance['booster_collection'];
+        $totalCollection   = $finance['total_member_contribution'];
+        $totalExpenses     = $finance['total_expenses'];
+        $totalIncome       = $finance['total_other_income'];
+        $totalFdrPrincipal = $finance['total_active_fdr'];
+        $totalFdrInterest  = $finance['total_fdr_interest'];
+        $activeFdrCount    = $finance['fdr_created']['count'];
+        $closedFdrCount    = $finance['fdr_closed']['count'];
+        $thisMonthFdrInterest = $finance['total_fdr_interest'];
         $upcomingFdrMaturities = FdrRecord::where('status', 'active')
             ->where('maturity_date', '<=', now()->addDays(90))
             ->orderBy('maturity_date')
@@ -57,19 +56,16 @@ class DashboardController extends Controller
             ->get();
         $netFund = $totalCollection + $totalIncome - $totalExpenses;
 
-        // ── Bank & cash-flow summary ─────────────────────────────────────────
+        // ── Bank & cash-flow summary (period scoped) ─────────────────────────
         $bankAccounts        = BankAccount::all();
-        $totalBankDeposits   = (float) BankDeposit::sum('amount');
-        $totalBankWithdrawn  = (float) BankWithdrawal::sum('amount');
-        $cashInHand          = $totalCollection - $totalBankDeposits;
-        $totalBankAvailable  = $bankAccounts->sum('available_balance');
+        $totalBankDeposits   = $finance['total_bank_deposits'];
+        $totalBankWithdrawn  = $finance['total_withdrawals'];
+        $cashInHand          = $finance['cash_in_hand'];
+        $totalBankAvailable  = $finance['total_available_balance'];
         $bankAccountsCount   = $bankAccounts->count();
 
-        $pendingPaymentsList = MonthlyFeeSubmission::with('member.user')
-            ->where('status', 'pending')
-            ->latest()
-            ->limit(10)
-            ->get();
+        // ── Who hasn't paid (payment due list) ───────────────────────────────
+        $dueList = $this->dueList($range);
 
         $recentApplications = MembershipApplication::where('status', 'pending')
             ->latest()
@@ -128,6 +124,7 @@ class DashboardController extends Controller
             ->values();
 
         return view('admin.dashboard', compact(
+            'range',
             'totalMembers', 'activeMembers', 'pendingApplications', 'pendingPayments',
             'expectedCollection', 'collectedThisMonth', 'dueThisMonth',
             'totalCollection', 'totalExpenses', 'totalIncome',
@@ -135,8 +132,52 @@ class DashboardController extends Controller
             'activeFdrCount', 'closedFdrCount', 'thisMonthFdrInterest', 'upcomingFdrMaturities',
             'totalBankDeposits', 'totalBankWithdrawn', 'cashInHand', 'totalBankAvailable', 'bankAccountsCount',
             'monthlyCollection', 'boosterCollection',
-            'pendingPaymentsList', 'recentApplications',
+            'dueList', 'recentApplications',
             'memberBirthdays', 'familyBirthdays', 'upcomingAnniversaries'
         ));
+    }
+
+    /**
+     * Active members who have not fully paid for the selected period.
+     */
+    private function dueList(DateRange $range)
+    {
+        $members = Member::with('user')->where('status', 'active')->orderBy('id')->get();
+
+        if ($range->isAll()) {
+            return $members->map(fn($m) => [
+                'member'   => $m,
+                'expected' => $m->total_payable,
+                'paid'     => $m->total_paid,
+                'due'      => $m->total_due,
+            ])->filter(fn($r) => $r['due'] > 0)->sortByDesc('due')->take(12)->values();
+        }
+
+        // Build the set of (year-month) keys covered by the range.
+        $cursor    = $range->from->copy()->startOfMonth();
+        $end       = $range->to->copy()->startOfMonth();
+        $monthKeys = [];
+        while ($cursor->lte($end)) {
+            $monthKeys[] = $cursor->year . '-' . str_pad($cursor->month, 2, '0', STR_PAD_LEFT);
+            $cursor->addMonthNoOverflow();
+        }
+
+        return $members->map(function ($m) use ($monthKeys) {
+            $join = $m->join_date->copy()->startOfMonth();
+            $payable = collect($monthKeys)->filter(function ($k) use ($join) {
+                [$y, $mo] = explode('-', $k);
+                return \Carbon\Carbon::create((int) $y, (int) $mo, 1)->gte($join);
+            });
+            $expected = $payable->count() * (float) $m->monthly_fee_amount;
+            $paid = (float) $m->approvedFeeSubmissions()->get()
+                ->filter(fn($s) => in_array($s->year . '-' . str_pad($s->month, 2, '0', STR_PAD_LEFT), $monthKeys, true))
+                ->sum('amount');
+            return [
+                'member'   => $m,
+                'expected' => $expected,
+                'paid'     => $paid,
+                'due'      => max(0.0, $expected - $paid),
+            ];
+        })->filter(fn($r) => $r['due'] > 0)->sortByDesc('due')->take(12)->values();
     }
 }

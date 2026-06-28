@@ -6,6 +6,8 @@
 @section('content')
 <div class="space-y-6 max-w-screen-lg">
 
+    @include('partials.period-filter', ['range' => $range, 'action' => route('member.dashboard')])
+
     {{-- ── Welcome Banner ────────────────────────────────── --}}
     @if($member)
     <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-2xl p-6 shadow-lg shadow-blue-200/50 relative overflow-hidden">
@@ -102,7 +104,7 @@
     {{-- ── Club Bank & Investment Summary (read-only) ──────── --}}
     <div>
         <div class="flex items-center justify-between mb-3">
-            <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Club Bank &amp; Investment Summary</h2>
+            <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Club Bank &amp; Investment Summary <span class="text-gray-300 normal-case">· {{ $range->label }}</span></h2>
             <a href="{{ route('member.statements.club-finance') }}" class="text-xs text-blue-600 hover:underline font-medium">Full statement <i class="fas fa-chevron-right text-[10px]"></i></a>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -167,53 +169,48 @@
     {{-- ── Recent Payments + Notices ──────────────────────── --}}
     <div class="grid lg:grid-cols-2 gap-6">
 
-        {{-- Recent Payments --}}
+        {{-- My Unpaid Months (due list) --}}
         <div class="card">
             <div class="card-header">
                 <div>
-                    <h2 class="text-sm font-semibold text-gray-900">Recent Payments</h2>
-                    <p class="text-xs text-gray-400 mt-0.5">Your latest fee submissions</p>
+                    <h2 class="text-sm font-semibold text-gray-900">Months Not Paid</h2>
+                    <p class="text-xs text-gray-400 mt-0.5">Your outstanding dues · {{ $range->label }}</p>
                 </div>
                 <a href="{{ route('member.fees.create') }}"
                    class="btn-primary btn-sm shrink-0">
-                    <i class="fas fa-plus"></i> Submit
+                    <i class="fas fa-plus"></i> Pay
                 </a>
             </div>
             <div class="divide-y divide-gray-50">
-                @forelse($recentPayments as $p)
+                @forelse($dueRows as $r)
                 <div class="flex items-center gap-4 px-5 py-3.5">
-                    <div class="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-                        <i class="fas fa-money-bill-wave text-gray-400 text-sm"></i>
+                    <div class="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
+                        <i class="fas fa-exclamation text-red-500 text-sm"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-semibold text-gray-900">
-                            {{ date('F', mktime(0,0,0,$p->month,1)) }} {{ $p->year }}
-                        </p>
-                        <p class="text-xs text-gray-400">{{ $p->payment_date->format('d M Y') }} · {{ ucfirst($p->payment_method) }}</p>
+                        <p class="text-sm font-semibold text-gray-900">{{ $r['month_name'] }}</p>
+                        <p class="text-xs text-gray-400">Paid ৳{{ number_format($r['paid'], 0) }} of ৳{{ number_format($r['expected'], 0) }}</p>
                     </div>
                     <div class="text-right shrink-0">
-                        <p class="text-sm font-bold text-gray-900">৳{{ number_format($p->amount, 0) }}</p>
-                        <span class="badge-{{ $p->status }}">{{ ucfirst($p->status) }}</span>
+                        <p class="text-sm font-bold text-red-600">৳{{ number_format($r['due'], 0) }}</p>
+                        <span class="badge-{{ $r['status'] === 'partial' ? 'pending' : 'rejected' }}">{{ ucfirst($r['status']) }}</span>
                     </div>
                 </div>
                 @empty
                 <div class="px-5 py-10 text-center">
-                    <i class="fas fa-receipt text-3xl text-gray-200 mb-3 block"></i>
-                    <p class="text-sm text-gray-500 font-medium">No payments yet</p>
-                    <p class="text-xs text-gray-400 mb-4">Submit your first monthly fee</p>
-                    <a href="{{ route('member.fees.create') }}" class="btn-primary btn-sm">
-                        <i class="fas fa-plus"></i> Submit Payment
-                    </a>
+                    <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-circle-check text-emerald-500 text-lg"></i>
+                    </div>
+                    <p class="text-sm font-medium text-gray-500">You're all paid up!</p>
+                    <p class="text-xs text-gray-400">No dues for {{ $range->label }}.</p>
                 </div>
                 @endforelse
             </div>
-            @if($recentPayments->isNotEmpty())
             <div class="px-5 py-3 border-t border-gray-50">
-                <a href="{{ route('member.fees.index') }}" class="text-xs text-blue-600 font-medium hover:underline">
-                    View all payments →
+                <a href="{{ route('member.statement') }}" class="text-xs text-blue-600 font-medium hover:underline">
+                    View full statement →
                 </a>
             </div>
-            @endif
         </div>
 
         {{-- Notices --}}

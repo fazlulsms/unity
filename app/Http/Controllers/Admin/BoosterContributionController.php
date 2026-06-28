@@ -7,25 +7,44 @@ use App\Models\AuditLog;
 use App\Models\BoosterContribution;
 use App\Models\BoosterPayment;
 use App\Models\Member;
+use App\Support\DateRange;
 use Illuminate\Http\Request;
 
 class BoosterContributionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $drives = BoosterContribution::withCount('members')->latest('period_date')->latest('id')->get();
+        $range = DateRange::fromRequest($request, 'all');
+        $from  = $range->from;
+        $to    = $range->to;
+
+        // Drives whose contribution period falls in the selected range.
+        $drives = BoosterContribution::withCount('members')
+            ->when($from, fn($q) => $q->whereDate('period_date', '>=', $from))
+            ->when($to, fn($q) => $q->whereDate('period_date', '<=', $to))
+            ->latest('period_date')->latest('id')->get();
+
+        // Deposited is scoped to payments made within the period.
+        $rows = $drives->map(function ($d) use ($from, $to) {
+            $deposited = (float) $d->payments()
+                ->when($from, fn($q) => $q->whereDate('payment_date', '>=', $from))
+                ->when($to, fn($q) => $q->whereDate('payment_date', '<=', $to))
+                ->sum('amount');
+            return [
+                'drive'     => $d,
+                'expected'  => $d->total_expected,
+                'deposited' => $deposited,
+                'due'       => max(0.0, $d->total_expected - $deposited),
+            ];
+        });
 
         $totals = [
-            'expected'  => 0.0,
-            'deposited' => 0.0,
+            'expected'  => (float) $rows->sum('expected'),
+            'deposited' => (float) $rows->sum('deposited'),
         ];
-        foreach ($drives as $d) {
-            $totals['expected']  += $d->total_expected;
-            $totals['deposited'] += $d->total_deposited;
-        }
         $totals['due'] = max(0.0, $totals['expected'] - $totals['deposited']);
 
-        return view('admin.booster.index', compact('drives', 'totals'));
+        return view('admin.booster.index', compact('range', 'rows', 'totals'));
     }
 
     public function create()

@@ -32,7 +32,7 @@
 <div class="page">
     <div class="org-header">
         <div class="org-name">Unity Circle</div>
-        <div class="doc-title">Club Finance Statement — as of {{ now()->format('d M Y') }}</div>
+        <div class="doc-title">Club Finance Statement — {{ $range->label }}</div>
     </div>
 
     <h3 class="section">Contributions &amp; Cash Flow</h3>
@@ -79,28 +79,28 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($accounts as $a)
+            @forelse($bankRows as $r)
             <tr>
-                <td>{{ $a->bank_name }} ({{ $a->masked_account_number }})</td>
-                <td class="right">Tk. {{ number_format($a->total_deposited, 0) }}</td>
-                <td class="right">Tk. {{ number_format($a->available_balance, 0) }}</td>
-                <td class="right">Tk. {{ number_format($a->active_fdr_amount, 0) }}</td>
-                <td class="right">Tk. {{ number_format($a->fdr_interest_income, 0) }}</td>
-                <td class="right">Tk. {{ number_format($a->total_withdrawn, 0) }}</td>
+                <td>{{ $r['account']->bank_name }} ({{ $r['account']->masked_account_number }})</td>
+                <td class="right">Tk. {{ number_format($r['deposited'], 0) }}</td>
+                <td class="right">Tk. {{ number_format($r['available'], 0) }}</td>
+                <td class="right">Tk. {{ number_format($r['activeFdr'], 0) }}</td>
+                <td class="right">Tk. {{ number_format($r['interest'], 0) }}</td>
+                <td class="right">Tk. {{ number_format($r['withdrawn'], 0) }}</td>
             </tr>
             @empty
             <tr><td colspan="6" style="text-align:center; color:#9ca3af; padding:14px;">No bank accounts.</td></tr>
             @endforelse
         </tbody>
-        @if($accounts->isNotEmpty())
+        @if($bankRows->isNotEmpty())
         <tfoot>
             <tr>
                 <td>Total</td>
-                <td class="right">Tk. {{ number_format($accounts->sum('total_deposited'), 0) }}</td>
-                <td class="right">Tk. {{ number_format($accounts->sum('available_balance'), 0) }}</td>
-                <td class="right">Tk. {{ number_format($accounts->sum('active_fdr_amount'), 0) }}</td>
-                <td class="right">Tk. {{ number_format($accounts->sum('fdr_interest_income'), 0) }}</td>
-                <td class="right">Tk. {{ number_format($accounts->sum('total_withdrawn'), 0) }}</td>
+                <td class="right">Tk. {{ number_format($bankRows->sum('deposited'), 0) }}</td>
+                <td class="right">Tk. {{ number_format($bankRows->sum('available'), 0) }}</td>
+                <td class="right">Tk. {{ number_format($bankRows->sum('activeFdr'), 0) }}</td>
+                <td class="right">Tk. {{ number_format($bankRows->sum('interest'), 0) }}</td>
+                <td class="right">Tk. {{ number_format($bankRows->sum('withdrawn'), 0) }}</td>
             </tr>
         </tfoot>
         @endif

@@ -10,33 +10,44 @@ use App\Models\Income;
 use App\Models\Member;
 use App\Models\MonthlyFeeSubmission;
 use App\Models\Notice;
+use App\Support\DateRange;
 use App\Support\FinanceSummary;
+use App\Support\MemberStatement;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user   = Auth::user();
         $member = $user->member;
+
+        // Dashboard defaults to the current month.
+        $range = DateRange::fromRequest($request, 'this_month');
 
         $pendingPayments  = $member?->feeSubmissions()->where('status', 'pending')->count() ?? 0;
         $approvedPayments = $member?->feeSubmissions()->where('status', 'approved')->count() ?? 0;
         $totalPaid        = $member?->feeSubmissions()->where('status', 'approved')->sum('amount') ?? 0;
 
-        $recentPayments = $member?->feeSubmissions()->with('receipt')->latest()->limit(5)->get() ?? collect();
+        // "Who hasn't paid" for this member = their own unpaid months in the period.
+        $dueRows = collect();
+        if ($member) {
+            $statement = MemberStatement::personal($member, $range);
+            $dueRows = collect($statement['rows'])->filter(fn($r) => $r['due'] > 0)->values();
+        }
 
         $notices = Notice::published()->latest('published_at')->limit(5)->get();
 
         $stats = $this->getTransparencyStats();
 
-        // Read-only club financial position (auto-updates as admin records entries).
-        $finance      = FinanceSummary::all();
+        // Read-only club financial position (period scoped, auto-updates with admin entries).
+        $finance      = FinanceSummary::all($range->from, $range->to);
         $bankAccounts = BankAccount::orderBy('bank_name')->get();
 
         return view('member.dashboard', compact(
-            'member', 'pendingPayments', 'approvedPayments',
-            'totalPaid', 'recentPayments', 'notices', 'stats',
+            'member', 'range', 'pendingPayments', 'approvedPayments',
+            'totalPaid', 'dueRows', 'notices', 'stats',
             'finance', 'bankAccounts'
         ));
     }

@@ -40,7 +40,7 @@
 <div class="page">
     <div class="org-header">
         <div class="org-name">Unity Circle</div>
-        <div class="doc-title">Personal Member Statement — {{ $year }}</div>
+        <div class="doc-title">Personal Member Statement — {{ $range->label }}</div>
     </div>
 
     <div class="member-box">
@@ -60,7 +60,7 @@
         <div class="sum-cell"><div class="sum-label">Outstanding</div><div class="sum-value {{ $totals['due'] > 0 ? 'red' : 'gray' }}">Tk. {{ number_format($totals['due'], 2) }}</div></div>
     </div>
 
-    <h3 class="section">Monthly Fees — {{ $year }}</h3>
+    <h3 class="section">Monthly Fees — {{ $range->label }}</h3>
     <table>
         <thead>
             <tr>
@@ -85,7 +85,7 @@
                 </td>
             </tr>
             @empty
-            <tr><td colspan="8" style="text-align:center; color:#9ca3af; padding:16px;">No monthly records for {{ $year }}.</td></tr>
+            <tr><td colspan="8" style="text-align:center; color:#9ca3af; padding:16px;">No monthly records for {{ $range->label }}.</td></tr>
             @endforelse
             @if($totals['joining_contribution'] > 0)
             <tr style="background:#fffbeb;">

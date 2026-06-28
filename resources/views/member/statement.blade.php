@@ -14,19 +14,11 @@
                 <p class="text-xs text-gray-400 font-mono mt-0.5">{{ $member->member_number }} · Joined {{ $member->join_date->format('d M Y') }}</p>
                 <p class="text-sm text-gray-500 mt-1">Monthly contribution: <span class="font-semibold text-gray-700">৳ {{ number_format($member->monthly_fee_amount, 2) }}</span></p>
             </div>
-            <div class="flex items-center gap-2 shrink-0">
-                <form method="GET" class="flex items-center gap-2">
-                    <label class="text-sm text-gray-600 font-medium">Year:</label>
-                    <select name="year" class="form-select w-auto" onchange="this.form.submit()">
-                        @foreach($availableYears as $y)
-                        <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>
-                        @endforeach
-                    </select>
-                </form>
-                <a href="{{ route('member.statements.personal-pdf', ['year' => $year]) }}" class="btn-primary btn-sm whitespace-nowrap"><i class="fas fa-download"></i> PDF</a>
-            </div>
+            <a href="{{ route('member.statements.personal-pdf') }}?{{ $range->queryString() }}" class="btn-primary btn-sm whitespace-nowrap shrink-0"><i class="fas fa-download"></i> PDF</a>
         </div>
     </div>
+
+    @include('partials.period-filter', ['range' => $range, 'action' => route('member.statement'), 'pdf' => route('member.statements.personal-pdf')])
 
     {{-- Summary — total member contribution (monthly + booster) --}}
     <div class="grid sm:grid-cols-3 gap-4">
@@ -43,7 +35,7 @@
             <p class="text-2xl font-bold {{ $totals['due'] > 0 ? 'text-red-600' : 'text-gray-400' }}">৳ {{ number_format($totals['due'], 0) }}</p>
         </div>
     </div>
-    <p class="text-xs text-gray-400 -mt-2">Includes monthly fees ({{ $year }}) and Booster Contribution.</p>
+    <p class="text-xs text-gray-400 -mt-2">Includes monthly fees and Booster Contribution for {{ $range->label }}.</p>
 
     {{-- Table --}}
     <div class="table-wrap">
@@ -85,7 +77,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="8" class="table-empty">No contribution records for {{ $year }}.</td></tr>
+                <tr><td colspan="8" class="table-empty">No contribution records for {{ $range->label }}.</td></tr>
                 @endforelse
                 @if($totals['joining_contribution'] > 0)
                 <tr class="bg-amber-50/60 border-b border-amber-100">

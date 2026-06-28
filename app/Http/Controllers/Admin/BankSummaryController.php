@@ -4,33 +4,33 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\BankAccount;
+use App\Support\DateRange;
 use App\Support\FinanceSummary;
+use Illuminate\Http\Request;
 
 class BankSummaryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $accounts = BankAccount::with('creator')->orderBy('bank_name')->get();
+        $range = DateRange::fromRequest($request, 'all');
+        $from  = $range->from;
+        $to    = $range->to;
+        $asOf  = $range->asOf();
 
-        // Cash-flow chain: Collection → Bank Deposits → Cash in Hand
-        // Total collection includes Booster Contribution (direct member contribution).
-        $monthlyCollection = FinanceSummary::monthlyCollection();
-        $boosterCollection = FinanceSummary::boosterCollection();
-        $totalCollection   = $monthlyCollection + $boosterCollection;
-        $totalDeposited    = FinanceSummary::totalBankDeposits();
-        $cashInHand        = $totalCollection - $totalDeposited;
+        $summary = FinanceSummary::all($from, $to);
 
-        $totalWithdrawn    = FinanceSummary::totalWithdrawals();
-        $totalAvailable    = $accounts->sum('available_balance');
-        $totalActiveFdr    = FinanceSummary::totalActiveFdr();
-        $totalFdrInterest  = FinanceSummary::totalFdrInterest();
+        // Bank-wise figures: deposits / withdrawals / interest are period flows;
+        // available balance and active FDR are positions as of the period end.
+        $accounts = BankAccount::orderBy('bank_name')->get();
+        $bankRows = $accounts->map(fn($a) => [
+            'account'   => $a,
+            'deposited' => $a->depositsBetween($from, $to),
+            'available' => $a->availableBalanceAsOf($asOf),
+            'activeFdr' => $a->activeFdrAsOf($asOf),
+            'interest'  => $a->fdrInterestBetween($from, $to),
+            'withdrawn' => $a->withdrawalsBetween($from, $to),
+        ]);
 
-        $summary = compact(
-            'monthlyCollection', 'boosterCollection',
-            'totalCollection', 'totalDeposited', 'cashInHand',
-            'totalWithdrawn', 'totalAvailable', 'totalActiveFdr', 'totalFdrInterest'
-        );
-
-        return view('admin.bank-summary.index', compact('accounts', 'summary'));
+        return view('admin.bank-summary.index', compact('range', 'summary', 'bankRows'));
     }
 }

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use App\Models\BankAccount;
-use App\Models\FdrRecord;
+use App\Support\DateRange;
 use App\Support\FinanceSummary;
 use App\Support\MemberStatement;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -21,13 +21,12 @@ class StatementController extends Controller
             return redirect()->route('member.dashboard')->with('error', 'Member profile not found.');
         }
 
-        $year           = (int) $request->get('year', now()->year);
-        $availableYears = range(max($member->join_date->year, 2020), now()->year);
+        $range = DateRange::fromRequest($request, 'this_year');
 
-        return view('member.statements.index', compact('member', 'year', 'availableYears'));
+        return view('member.statements.index', compact('member', 'range'));
     }
 
-    /** Personal member statement as PDF. */
+    /** Personal member statement as PDF (respects the selected period). */
     public function personalPdf(Request $request)
     {
         $member = Auth::user()->member;
@@ -35,51 +34,66 @@ class StatementController extends Controller
             return redirect()->route('member.dashboard')->with('error', 'Member profile not found.');
         }
 
-        $year = (int) $request->get('year', now()->year);
-        $data = MemberStatement::personal($member, $year);
+        $range = DateRange::fromRequest($request, 'this_year');
+        $data  = MemberStatement::personal($member, $range);
 
         $pdf = Pdf::loadView('member.pdf.personal-statement', array_merge($data, compact('member')));
         $pdf->setPaper('a4', 'portrait');
 
-        return $pdf->download("my-statement-{$member->member_number}-{$year}.pdf");
+        return $pdf->download("my-statement-{$member->member_number}.pdf");
     }
 
     /** Club finance statement — read-only view. */
-    public function clubFinance()
+    public function clubFinance(Request $request)
     {
         $member = Auth::user()->member;
-        $data   = $this->clubFinanceData();
+        $range  = DateRange::fromRequest($request, 'all');
+        $data   = $this->clubFinanceData($range);
 
-        return view('member.statements.club-finance', array_merge($data, compact('member')));
+        return view('member.statements.club-finance', array_merge($data, compact('member', 'range')));
     }
 
-    /** Club finance statement as PDF. */
-    public function clubFinancePdf()
+    /** Club finance statement as PDF (respects the selected period). */
+    public function clubFinancePdf(Request $request)
     {
-        $data = $this->clubFinanceData();
+        $range = DateRange::fromRequest($request, 'all');
+        $data  = $this->clubFinanceData($range);
 
-        $pdf = Pdf::loadView('member.pdf.club-finance-statement', $data);
+        $pdf = Pdf::loadView('member.pdf.club-finance-statement', array_merge($data, compact('range')));
         $pdf->setPaper('a4', 'portrait');
 
         return $pdf->download('club-finance-statement-' . now()->format('Y-m-d') . '.pdf');
     }
 
     /**
-     * Assemble the club-wide finance figures + bank-wise + FDR breakdown
-     * shared by the view and the PDF.
+     * Club-wide finance figures + bank-wise + FDR breakdown for a period.
+     * Flows are within the range; positions are as of the period end.
      */
-    private function clubFinanceData(): array
+    private function clubFinanceData(DateRange $range): array
     {
-        $summary  = FinanceSummary::all();
+        $from = $range->from;
+        $to   = $range->to;
+        $asOf = $range->asOf();
+
+        $summary  = FinanceSummary::all($from, $to);
         $accounts = BankAccount::orderBy('bank_name')->get();
 
+        $bankRows = $accounts->map(fn($a) => [
+            'account'   => $a,
+            'deposited' => $a->depositsBetween($from, $to),
+            'available' => $a->availableBalanceAsOf($asOf),
+            'activeFdr' => $a->activeFdrAsOf($asOf),
+            'interest'  => $a->fdrInterestBetween($from, $to),
+            'withdrawn' => $a->withdrawalsBetween($from, $to),
+        ]);
+
         $fdrSummary = [
-            'active_count'    => FdrRecord::where('status', 'active')->count(),
-            'active_amount'   => (float) FdrRecord::where('status', 'active')->sum('principal_amount'),
-            'closed_count'    => FdrRecord::whereIn('status', ['matured', 'closed', 'renewed'])->count(),
+            'active_count'    => $summary['fdr_created']['count'],
+            'active_amount'   => $summary['fdr_created']['amount'],
+            'closed_count'    => $summary['fdr_closed']['count'],
             'interest_earned' => $summary['total_fdr_interest'],
         ];
 
-        return compact('summary', 'accounts', 'fdrSummary');
+        return compact('summary', 'bankRows', 'fdrSummary');
     }
 }

@@ -6,6 +6,8 @@
 @section('content')
 <div class="space-y-6 max-w-screen-xl">
 
+    @include('partials.period-filter', ['range' => $range, 'action' => route('admin.dashboard')])
+
     {{-- ── Top Member Stats ──────────────────────────────── --}}
     <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <a href="{{ route('admin.members.index') }}" class="card p-5 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer">
@@ -49,7 +51,7 @@
     {{-- ── This Month ─────────────────────────────────────── --}}
     <div>
         <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            {{ now()->format('F Y') }} Overview
+            Collection Overview <span class="text-gray-300 normal-case">· {{ $range->label }}</span>
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <a href="{{ route('admin.collections.index') }}" class="card p-5 border-t-4 border-blue-500 hover:shadow-md transition-shadow cursor-pointer">
@@ -80,7 +82,7 @@
 
     {{-- ── Fund Summary ───────────────────────────────────── --}}
     <div>
-        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Fund Summary (All Time)</h2>
+        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Fund Summary <span class="text-gray-300 normal-case">· {{ $range->label }}</span></h2>
         <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
             <a href="{{ route('admin.collections.index') }}" class="card p-4 hover:shadow-md transition-shadow cursor-pointer">
                 <div class="flex items-center justify-between mb-3">
@@ -179,30 +181,29 @@
     {{-- ── Activity Tables ────────────────────────────────── --}}
     <div class="grid lg:grid-cols-2 gap-6">
 
-        {{-- Pending Payments --}}
+        {{-- Members Not Paid (payment due list) --}}
         <div class="card">
             <div class="card-header">
                 <div>
-                    <h2 class="text-sm font-semibold text-gray-900">Pending Payments</h2>
-                    <p class="text-xs text-gray-400 mt-0.5">Awaiting your approval</p>
+                    <h2 class="text-sm font-semibold text-gray-900">Members Not Paid</h2>
+                    <p class="text-xs text-gray-400 mt-0.5">Outstanding dues · {{ $range->label }}</p>
                 </div>
-                <a href="{{ route('admin.payments.index') }}" class="btn-ghost btn-sm text-blue-600">
+                <a href="{{ route('admin.collections.due') }}" class="btn-ghost btn-sm text-blue-600">
                     View all <i class="fas fa-chevron-right text-xs"></i>
                 </a>
             </div>
             <div class="divide-y divide-gray-50">
-                @forelse($pendingPaymentsList as $p)
+                @forelse($dueList as $row)
                 <div class="flex items-center gap-3 px-5 py-3.5">
-                    <img src="{{ $p->member->user->photo_url }}" class="w-8 h-8 rounded-full object-cover shrink-0">
+                    <img src="{{ $row['member']->user->photo_url }}" class="w-8 h-8 rounded-full object-cover shrink-0">
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-gray-900 truncate">{{ $p->member->user->name }}</p>
-                        <p class="text-xs text-gray-400">{{ date('F', mktime(0,0,0,$p->month,1)) }} {{ $p->year }}
-                            · {{ ucfirst($p->payment_method) }}</p>
+                        <p class="text-sm font-medium text-gray-900 truncate">{{ $row['member']->user->name }}</p>
+                        <p class="text-xs text-gray-400">{{ $row['member']->member_number }} · Paid ৳{{ number_format($row['paid'], 0) }} of ৳{{ number_format($row['expected'], 0) }}</p>
                     </div>
                     <div class="text-right shrink-0">
-                        <p class="text-sm font-bold text-gray-900">৳{{ number_format($p->amount, 0) }}</p>
-                        <a href="{{ route('admin.payments.show', $p) }}"
-                           class="text-xs text-blue-600 hover:text-blue-700 font-medium">Review →</a>
+                        <p class="text-sm font-bold text-red-600">৳{{ number_format($row['due'], 0) }}</p>
+                        <a href="{{ route('admin.members.show', $row['member']) }}"
+                           class="text-xs text-blue-600 hover:text-blue-700 font-medium">View →</a>
                     </div>
                 </div>
                 @empty
@@ -210,8 +211,8 @@
                     <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-3">
                         <i class="fas fa-circle-check text-emerald-500 text-lg"></i>
                     </div>
-                    <p class="text-sm font-medium text-gray-500">All caught up!</p>
-                    <p class="text-xs text-gray-400">No pending payments.</p>
+                    <p class="text-sm font-medium text-gray-500">Everyone has paid!</p>
+                    <p class="text-xs text-gray-400">No dues for {{ $range->label }}.</p>
                 </div>
                 @endforelse
             </div>
