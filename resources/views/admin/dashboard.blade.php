@@ -90,6 +90,7 @@
                     </span>
                 </div>
                 <p class="text-lg font-bold text-blue-700">৳{{ number_format($totalCollection, 0) }}</p>
+                <p class="text-[11px] text-gray-400 mt-1">Fees ৳{{ number_format($monthlyCollection, 0) }} + Booster ৳{{ number_format($boosterCollection, 0) }}</p>
             </a>
             <a href="{{ route('admin.expenses.index') }}" class="card p-4 hover:shadow-md transition-shadow cursor-pointer">
                 <div class="flex items-center justify-between mb-3">

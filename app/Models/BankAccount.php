@@ -48,6 +48,14 @@ class BankAccount extends Model
         return $this->status === 'active';
     }
 
+    /** Masked account number for member-facing read-only views, e.g. ****1234. */
+    public function getMaskedAccountNumberAttribute(): string
+    {
+        $num = preg_replace('/\s+/', '', (string) $this->account_number);
+        $last = substr($num, -4);
+        return '****' . $last;
+    }
+
     public function getAccountTypeLabelAttribute(): string
     {
         return match ($this->account_type) {

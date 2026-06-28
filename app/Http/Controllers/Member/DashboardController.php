@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
+use App\Models\BankAccount;
 use App\Models\Expense;
 use App\Models\FdrRecord;
 use App\Models\Income;
 use App\Models\Member;
 use App\Models\MonthlyFeeSubmission;
 use App\Models\Notice;
+use App\Support\FinanceSummary;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
@@ -28,9 +30,14 @@ class DashboardController extends Controller
 
         $stats = $this->getTransparencyStats();
 
+        // Read-only club financial position (auto-updates as admin records entries).
+        $finance      = FinanceSummary::all();
+        $bankAccounts = BankAccount::orderBy('bank_name')->get();
+
         return view('member.dashboard', compact(
             'member', 'pendingPayments', 'approvedPayments',
-            'totalPaid', 'recentPayments', 'notices', 'stats'
+            'totalPaid', 'recentPayments', 'notices', 'stats',
+            'finance', 'bankAccounts'
         ));
     }
 

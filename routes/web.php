@@ -41,6 +41,10 @@ Route::middleware(['auth', 'verified', 'role:member|admin|treasurer'])->prefix('
     Route::get('/profile', [Member\ProfileController::class, 'edit'])->name('profile');
     Route::patch('/profile', [Member\ProfileController::class, 'update'])->name('profile.update');
 
+    Route::get('/additional-info', [Member\AdditionalInfoController::class, 'show'])->name('additional-info.show');
+    Route::get('/additional-info/edit', [Member\AdditionalInfoController::class, 'edit'])->name('additional-info.edit');
+    Route::patch('/additional-info', [Member\AdditionalInfoController::class, 'update'])->name('additional-info.update');
+
     Route::get('/fees', [Member\FeeSubmissionController::class, 'index'])->name('fees.index');
     Route::get('/fees/submit', [Member\FeeSubmissionController::class, 'create'])->name('fees.create');
     Route::post('/fees', [Member\FeeSubmissionController::class, 'store'])->name('fees.store');
@@ -48,6 +52,15 @@ Route::middleware(['auth', 'verified', 'role:member|admin|treasurer'])->prefix('
     Route::get('/receipts/{receipt}/download', [Member\FeeSubmissionController::class, 'downloadReceipt'])->name('receipts.download');
     Route::get('/statement', [Member\FeeSubmissionController::class, 'statement'])->name('statement');
     Route::get('/profile-pdf', [Member\ProfileController::class, 'profilePdf'])->name('profile-pdf');
+
+    // Statements & downloads
+    Route::get('/statements', [Member\StatementController::class, 'index'])->name('statements.index');
+    Route::get('/statements/personal-pdf', [Member\StatementController::class, 'personalPdf'])->name('statements.personal-pdf');
+    Route::get('/statements/club-finance', [Member\StatementController::class, 'clubFinance'])->name('statements.club-finance');
+    Route::get('/statements/club-finance-pdf', [Member\StatementController::class, 'clubFinancePdf'])->name('statements.club-finance-pdf');
+
+    // Read-only bank & investment detail
+    Route::get('/finance/bank/{bankAccount}', [Member\FinanceController::class, 'bankShow'])->name('finance.bank-show');
 });
 
 // ─── Admin / Treasurer Panel ─────────────────────────────────────────────────
@@ -115,6 +128,10 @@ Route::middleware(['auth', 'verified', 'role:admin|treasurer'])->prefix('admin')
     Route::resource('bank-withdrawals', Admin\BankWithdrawalController::class)->except(['destroy']);
 
     Route::get('/bank-summary', [Admin\BankSummaryController::class, 'index'])->name('bank-summary.index');
+
+    // ── Booster Contribution ─────────────────────────────────────────────────
+    Route::resource('booster', Admin\BoosterContributionController::class)->except(['destroy']);
+    Route::post('/booster/{booster}/payment', [Admin\BoosterContributionController::class, 'storePayment'])->name('booster.payment.store');
 
     // Notices
     Route::resource('notices', Admin\NoticeController::class);

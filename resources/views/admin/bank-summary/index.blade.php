@@ -11,9 +11,9 @@
         <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Cash Flow</h2>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <a href="{{ route('admin.collections.index') }}" class="card p-5 border-t-4 border-blue-500 hover:shadow-md transition-shadow cursor-pointer">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Total Collection</p>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Total Member Contribution</p>
                 <p class="text-2xl font-bold text-gray-900">৳{{ number_format($summary['totalCollection'], 0) }}</p>
-                <p class="text-xs text-gray-400 mt-1">Approved member fees</p>
+                <p class="text-xs text-gray-400 mt-1">Fees ৳{{ number_format($summary['monthlyCollection'], 0) }} + Booster ৳{{ number_format($summary['boosterCollection'], 0) }}</p>
             </a>
             <a href="{{ route('admin.bank-deposits.index') }}" class="card p-5 border-t-4 border-emerald-500 hover:shadow-md transition-shadow cursor-pointer">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Total Bank Deposits</p>

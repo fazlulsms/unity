@@ -32,6 +32,11 @@
     <i class="fas fa-bangladeshi-taka-sign w-4 text-center"></i>
     <span>Collections</span>
 </a>
+<a href="{{ route('admin.booster.index') }}"
+   class="sidebar-link {{ request()->routeIs('admin.booster.*') ? 'active' : '' }}">
+    <i class="fas fa-bolt w-4 text-center"></i>
+    <span>Booster Contributions</span>
+</a>
 <a href="{{ route('admin.payments.index') }}"
    class="sidebar-link {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
     <i class="fas fa-circle-check w-4 text-center"></i>

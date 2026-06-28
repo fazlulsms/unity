@@ -4,11 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\BankAccount;
-use App\Models\BankDeposit;
-use App\Models\BankWithdrawal;
-use App\Models\FdrRecord;
-use App\Models\Income;
-use App\Models\MonthlyFeeSubmission;
+use App\Support\FinanceSummary;
 
 class BankSummaryController extends Controller
 {
@@ -17,17 +13,20 @@ class BankSummaryController extends Controller
         $accounts = BankAccount::with('creator')->orderBy('bank_name')->get();
 
         // Cash-flow chain: Collection → Bank Deposits → Cash in Hand
-        $totalCollection   = (float) MonthlyFeeSubmission::where('status', 'approved')->sum('amount');
-        $totalDeposited    = (float) BankDeposit::sum('amount');
+        // Total collection includes Booster Contribution (direct member contribution).
+        $monthlyCollection = FinanceSummary::monthlyCollection();
+        $boosterCollection = FinanceSummary::boosterCollection();
+        $totalCollection   = $monthlyCollection + $boosterCollection;
+        $totalDeposited    = FinanceSummary::totalBankDeposits();
         $cashInHand        = $totalCollection - $totalDeposited;
 
-        $totalWithdrawn    = (float) BankWithdrawal::sum('amount');
+        $totalWithdrawn    = FinanceSummary::totalWithdrawals();
         $totalAvailable    = $accounts->sum('available_balance');
-        $totalActiveFdr    = (float) FdrRecord::where('status', 'active')->sum('principal_amount');
-        $totalFdrInterest  = (float) Income::where('income_type', 'fdr_interest')
-            ->where('status', 'active')->sum('amount');
+        $totalActiveFdr    = FinanceSummary::totalActiveFdr();
+        $totalFdrInterest  = FinanceSummary::totalFdrInterest();
 
         $summary = compact(
+            'monthlyCollection', 'boosterCollection',
             'totalCollection', 'totalDeposited', 'cashInHand',
             'totalWithdrawn', 'totalAvailable', 'totalActiveFdr', 'totalFdrInterest'
         );

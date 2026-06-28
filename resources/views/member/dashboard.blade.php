@@ -84,6 +84,86 @@
         </div>
     </div>
 
+    {{-- ── My Booster Contribution ─────────────────────────── --}}
+    @if($member && ($member->booster_expected > 0 || $member->booster_paid > 0))
+    <div class="card p-5">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-gray-900"><i class="fas fa-bolt text-amber-500"></i> My Booster Contribution</h2>
+            <a href="{{ route('member.statement') }}" class="text-xs text-blue-600 hover:underline">Details →</a>
+        </div>
+        <div class="grid grid-cols-3 gap-4">
+            <div class="text-center"><p class="text-xs text-gray-400">Expected</p><p class="text-lg font-bold text-gray-700">৳{{ number_format($member->booster_expected, 0) }}</p></div>
+            <div class="text-center"><p class="text-xs text-gray-400">Paid</p><p class="text-lg font-bold text-emerald-600">৳{{ number_format($member->booster_paid, 0) }}</p></div>
+            <div class="text-center"><p class="text-xs text-gray-400">Due</p><p class="text-lg font-bold {{ $member->booster_due > 0 ? 'text-red-600' : 'text-gray-400' }}">৳{{ number_format($member->booster_due, 0) }}</p></div>
+        </div>
+    </div>
+    @endif
+
+    {{-- ── Club Bank & Investment Summary (read-only) ──────── --}}
+    <div>
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Club Bank &amp; Investment Summary</h2>
+            <a href="{{ route('member.statements.club-finance') }}" class="text-xs text-blue-600 hover:underline font-medium">Full statement <i class="fas fa-chevron-right text-[10px]"></i></a>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            @php
+            $fcards = [
+                ['Member Contributions', $finance['monthly_collection'], 'text-gray-900', 'fa-hand-holding-dollar', 'bg-blue-100 text-blue-600'],
+                ['Booster Contributions', $finance['booster_collection'], 'text-gray-900', 'fa-bolt', 'bg-amber-100 text-amber-600'],
+                ['Cash in Hand', $finance['cash_in_hand'], $finance['cash_in_hand'] < 0 ? 'text-red-600' : 'text-amber-600', 'fa-sack-dollar', 'bg-amber-100 text-amber-600'],
+                ['Bank Balance (Available)', $finance['total_available_balance'], 'text-emerald-600', 'fa-wallet', 'bg-emerald-100 text-emerald-600'],
+                ['Active FDR', $finance['total_active_fdr'], 'text-violet-600', 'fa-building-columns', 'bg-violet-100 text-violet-600'],
+                ['FDR Interest Earned', $finance['total_fdr_interest'], 'text-teal-600', 'fa-arrow-trend-up', 'bg-teal-100 text-teal-600'],
+                ['Total Withdrawals', $finance['total_withdrawals'], 'text-red-600', 'fa-money-bill-wave', 'bg-red-100 text-red-600'],
+                ['Total Club Assets', $finance['total_club_assets'], 'text-emerald-700', 'fa-vault', 'bg-emerald-100 text-emerald-700'],
+            ];
+            @endphp
+            @foreach($fcards as $c)
+            <div class="card p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <p class="text-xs font-medium text-gray-400">{{ $c[0] }}</p>
+                    <span class="w-7 h-7 rounded-lg {{ $c[4] }} flex items-center justify-center"><i class="fas {{ $c[3] }} text-xs"></i></span>
+                </div>
+                <p class="text-lg font-bold {{ $c[2] }}">৳{{ number_format($c[1], 0) }}</p>
+            </div>
+            @endforeach
+        </div>
+
+        {{-- Bank-wise table --}}
+        @if($bankAccounts->isNotEmpty())
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden overflow-x-auto mt-4">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 border-b border-gray-100">
+                    <tr>
+                        <th class="text-left px-5 py-3 text-xs font-medium text-gray-500">Bank</th>
+                        <th class="text-right px-5 py-3 text-xs font-medium text-gray-500">Total Deposited</th>
+                        <th class="text-right px-5 py-3 text-xs font-medium text-gray-500">Available</th>
+                        <th class="text-right px-5 py-3 text-xs font-medium text-gray-500">Active FDR</th>
+                        <th class="text-right px-5 py-3 text-xs font-medium text-gray-500">Interest</th>
+                        <th class="text-right px-5 py-3 text-xs font-medium text-gray-500">Withdrawn</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    @foreach($bankAccounts as $a)
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-5 py-3">
+                            <a href="{{ route('member.finance.bank-show', $a) }}" class="font-medium text-blue-600 hover:underline">{{ $a->bank_name }}</a>
+                            <p class="text-xs text-gray-400 font-mono">{{ $a->masked_account_number }}</p>
+                        </td>
+                        <td class="px-5 py-3 text-right text-gray-700">৳{{ number_format($a->total_deposited, 0) }}</td>
+                        <td class="px-5 py-3 text-right font-semibold text-emerald-600">৳{{ number_format($a->available_balance, 0) }}</td>
+                        <td class="px-5 py-3 text-right text-violet-600">৳{{ number_format($a->active_fdr_amount, 0) }}</td>
+                        <td class="px-5 py-3 text-right text-teal-600">৳{{ number_format($a->fdr_interest_income, 0) }}</td>
+                        <td class="px-5 py-3 text-right text-red-600">৳{{ number_format($a->total_withdrawn, 0) }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <p class="text-xs text-gray-400 mt-2"><i class="fas fa-lock"></i> Read-only · account numbers masked · updates automatically as the admin records transactions.</p>
+        @endif
+    </div>
+
     {{-- ── Recent Payments + Notices ──────────────────────── --}}
     <div class="grid lg:grid-cols-2 gap-6">
 

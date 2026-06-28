@@ -14,6 +14,7 @@ use App\Models\MemberAdditionalInfo;
 use App\Models\MemberFamilyMember;
 use App\Models\MembershipApplication;
 use App\Models\MonthlyFeeSubmission;
+use App\Support\FinanceSummary;
 
 class DashboardController extends Controller
 {
@@ -34,7 +35,10 @@ class DashboardController extends Controller
             ->sum('amount');
         $dueThisMonth = max(0, $expectedCollection - $collectedThisMonth);
 
-        $totalCollection = MonthlyFeeSubmission::where('status', 'approved')->sum('amount');
+        $monthlyCollection = MonthlyFeeSubmission::where('status', 'approved')->sum('amount');
+        $boosterCollection = FinanceSummary::boosterCollection();
+        // Booster Contribution is direct member contribution — folded into the total.
+        $totalCollection = $monthlyCollection + $boosterCollection;
         $totalExpenses   = Expense::where('status', 'active')->sum('amount');
         $totalIncome     = Income::where('status', 'active')->sum('amount');
         $totalFdrPrincipal     = FdrRecord::whereIn('status', ['active', 'matured'])->sum('principal_amount');
@@ -130,6 +134,7 @@ class DashboardController extends Controller
             'totalFdrPrincipal', 'totalFdrInterest', 'netFund',
             'activeFdrCount', 'closedFdrCount', 'thisMonthFdrInterest', 'upcomingFdrMaturities',
             'totalBankDeposits', 'totalBankWithdrawn', 'cashInHand', 'totalBankAvailable', 'bankAccountsCount',
+            'monthlyCollection', 'boosterCollection',
             'pendingPaymentsList', 'recentApplications',
             'memberBirthdays', 'familyBirthdays', 'upcomingAnniversaries'
         ));

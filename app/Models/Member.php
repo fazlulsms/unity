@@ -66,6 +66,18 @@ class Member extends Model
         return $this->hasMany(MemberFamilyMember::class);
     }
 
+    public function boosterContributions()
+    {
+        return $this->belongsToMany(BoosterContribution::class, 'booster_contribution_member')
+            ->withPivot('expected_amount', 'remarks')
+            ->withTimestamps();
+    }
+
+    public function boosterPayments()
+    {
+        return $this->hasMany(BoosterPayment::class);
+    }
+
     public function spouse()
     {
         return $this->hasOne(MemberFamilyMember::class)->where('type', 'spouse');
@@ -116,5 +128,43 @@ class Member extends Model
     public function getTotalDueAttribute(): float
     {
         return max(0.0, $this->total_payable - $this->total_paid);
+    }
+
+    // ── Booster contribution (treated as direct member contribution) ─────────
+
+    /** Total booster amount expected from this member across all drives. */
+    public function getBoosterExpectedAttribute(): float
+    {
+        return (float) $this->boosterContributions()->sum('expected_amount');
+    }
+
+    /** Total booster amount this member has actually paid. */
+    public function getBoosterPaidAttribute(): float
+    {
+        return (float) $this->boosterPayments()->sum('amount');
+    }
+
+    /** Outstanding booster due (never negative). */
+    public function getBoosterDueAttribute(): float
+    {
+        return max(0.0, $this->booster_expected - $this->booster_paid);
+    }
+
+    /** Monthly fees + booster, paid. */
+    public function getTotalContributionPaidAttribute(): float
+    {
+        return $this->total_paid + $this->booster_paid;
+    }
+
+    /** Monthly fees + booster, expected. */
+    public function getTotalContributionExpectedAttribute(): float
+    {
+        return $this->total_payable + $this->booster_expected;
+    }
+
+    /** Combined outstanding (monthly + booster). */
+    public function getTotalContributionDueAttribute(): float
+    {
+        return $this->total_due + $this->booster_due;
     }
 }

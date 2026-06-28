@@ -14,6 +14,16 @@
     <i class="fas fa-money-bill-wave w-4 text-center"></i>
     <span>My Payments</span>
 </a>
+<a href="{{ route('member.additional-info.show') }}"
+   class="sidebar-link {{ request()->routeIs('member.additional-info.*') ? 'active' : '' }}">
+    <i class="fas fa-id-card-clip w-4 text-center"></i>
+    <span>Additional Info</span>
+</a>
+<a href="{{ route('member.statements.index') }}"
+   class="sidebar-link {{ request()->routeIs('member.statements.*') || request()->routeIs('member.statement') || request()->routeIs('member.finance.*') ? 'active' : '' }}">
+    <i class="fas fa-file-arrow-down w-4 text-center"></i>
+    <span>Statements</span>
+</a>
 <a href="{{ route('member.notices') }}"
    class="sidebar-link {{ request()->routeIs('member.notices') ? 'active' : '' }}">
     <i class="fas fa-bell w-4 text-center"></i>
