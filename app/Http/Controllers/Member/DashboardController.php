@@ -58,30 +58,51 @@ class DashboardController extends Controller
         return view('member.notices', compact('notices'));
     }
 
-    public function transparency()
+    public function transparency(Request $request)
     {
-        $stats = $this->getTransparencyStats();
+        // Mirrors the admin dashboard's financial information — read-only.
+        $range = DateRange::fromRequest($request, 'this_month');
+        $from  = $range->from;
+        $to    = $range->to;
+        $asOf  = $range->asOf();
+
+        $finance = FinanceSummary::all($from, $to);
+
+        $totalMembers  = Member::count();
+        $activeMembers = Member::where('status', 'active')->count();
+
+        $expected          = FinanceSummary::monthlyExpected($from, $to);
+        $collected         = $finance['monthly_collection'];
+        $due               = max(0.0, $expected - $collected);
+        $collectionPercent = $expected > 0 ? round($collected / $expected * 100, 1) : 0;
+        $netFund = $finance['total_member_contribution'] + $finance['total_other_income'] - $finance['total_expenses'];
+
+        // Bank-wise figures: flows in period, balances/active FDR as of period end.
+        $accounts = BankAccount::orderBy('bank_name')->get();
+        $bankRows = $accounts->map(fn($a) => [
+            'account'   => $a,
+            'deposited' => $a->depositsBetween($from, $to),
+            'available' => $a->availableBalanceAsOf($asOf),
+            'activeFdr' => $a->activeFdrAsOf($asOf),
+            'interest'  => $a->fdrInterestBetween($from, $to),
+            'withdrawn' => $a->withdrawalsBetween($from, $to),
+        ]);
 
         $recentTransactions = MonthlyFeeSubmission::with('member.user')
             ->where('status', 'approved')
-            ->latest('approved_at')
-            ->limit(15)
-            ->get();
-
-        $fdrSummary = FdrRecord::select('bank_name', 'status', 'principal_amount', 'opening_date', 'maturity_date', 'interest_rate')
-            ->get();
-
-        $monthlyExpenses = Expense::where('status', 'active')
-            ->selectRaw('YEAR(date) as year, MONTH(date) as month, SUM(amount) as total')
-            ->groupBy('year', 'month')
-            ->orderByDesc('year')
-            ->orderByDesc('month')
+            ->when($from, fn($q) => $q->whereDate('payment_date', '>=', $from))
+            ->when($to, fn($q) => $q->whereDate('payment_date', '<=', $to))
+            ->latest('payment_date')->latest('id')
             ->limit(12)
             ->get();
 
-        $notices = Notice::published()->latest('published_at')->limit(5)->get();
+        $fdrSummary = FdrRecord::orderByDesc('opening_date')->limit(8)->get();
 
-        return view('member.transparency', compact('stats', 'recentTransactions', 'fdrSummary', 'monthlyExpenses', 'notices'));
+        return view('member.transparency', compact(
+            'range', 'finance', 'totalMembers', 'activeMembers',
+            'expected', 'collected', 'due', 'collectionPercent', 'netFund',
+            'bankRows', 'recentTransactions', 'fdrSummary'
+        ));
     }
 
     private function getTransparencyStats(): array
