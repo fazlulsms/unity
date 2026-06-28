@@ -25,7 +25,16 @@ class FeeSubmissionController extends Controller
         $totalPaid   = $member->feeSubmissions()->where('status', 'approved')->sum('amount');
         $totalDue    = $member->total_due;
 
-        return view('member.fees.index', compact('submissions', 'totalPaid', 'totalDue', 'member'));
+        // Booster Contribution transactions for this member (direct member contribution).
+        $boosterPayments = $member->boosterPayments()->with('boosterContribution')
+            ->latest('payment_date')->latest('id')->get();
+        $boosterPaid = (float) $boosterPayments->sum('amount');
+        $boosterDue  = $member->booster_due;
+
+        return view('member.fees.index', compact(
+            'submissions', 'totalPaid', 'totalDue', 'member',
+            'boosterPayments', 'boosterPaid', 'boosterDue'
+        ));
     }
 
     public function create()
